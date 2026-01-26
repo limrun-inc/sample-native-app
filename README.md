@@ -3,7 +3,9 @@
 Build with the following command:
 ```bash
 xcodebuild -project sample-native-app.xcodeproj \
-  -scheme sample-native-app \                                                                                                           -sdk iphonesimulator \
+  -scheme sample-native-app \
+  -sdk iphonesimulator \
+  -arch arm64 \
   -configuration Debug \
   -derivedDataPath build \
   build
