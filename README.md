@@ -7,6 +7,7 @@ xcodebuild -project sample-native-app.xcodeproj \
   -sdk iphonesimulator \
   -arch arm64 \
   -configuration Debug \
+  -destination 'generic/platform=iOS Simulator' \
   -derivedDataPath build \
   build
 ```
