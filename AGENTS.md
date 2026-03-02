@@ -4,29 +4,62 @@
 
 ### Project overview
 
-This is a **native iOS SwiftUI app** (`sample-native-app`) targeting iOS 26.2. It is built with Xcode (`xcodebuild`) and has no package manager dependencies (no SPM, CocoaPods, or Carthage). Build and run instructions are in `README.md`.
+This is a **native iOS SwiftUI app** (`sample-native-app`) targeting iOS 26.2. It is built with Xcode (`xcodebuild`) and has no package manager dependencies (no SPM, CocoaPods, or Carthage). Build instructions are in `README.md`.
 
-### Key constraint: macOS-only build
+### Development loop via Limrun Xcode Sandbox
 
-This project **cannot be built or run on the Linux Cloud Agent VM**. It requires macOS with Xcode 26.2+ installed. The `xcodebuild` command, iOS SDK, and iOS Simulator are all macOS-only.
+Building and testing this iOS app is done entirely through **Limrun cloud Xcode sandboxes and iOS simulators**. The `xcode-sandbox/` directory contains a Node.js syncer that:
 
-### What works on Linux
+1. Creates a Limrun iOS instance with an Xcode sandbox
+2. Watches local files and auto-syncs changes to the remote sandbox
+3. Exposes `http://localhost:3000/xcodebuild` to trigger builds
+4. Serves an MCP endpoint at `http://localhost:3000/` for tool-based build triggering
 
-- **Linting**: SwiftLint (`swiftlint lint`) is installed at `/usr/local/bin/swiftlint` (static binary, no Swift toolchain needed). Run from the repo root to lint all `.swift` files.
-  - Note: the `statement_position` rule is skipped because SourceKit is not available on Linux. All other rules work.
-- **Code editing**: Swift source files can be edited normally.
+#### Starting the dev server
 
-### What does NOT work on Linux
+```bash
+cd xcode-sandbox && npm run start -- /workspace
+```
 
-- `xcodebuild` (build/compile)
-- iOS Simulator (run/test)
-- Xcode previews
-- Any tests that depend on the iOS SDK
+This takes ~30s to provision the instance and perform initial sync + build. Once ready, it prints:
+- The simulator stream URL (`https://console.limrun.com/stream/<instance-id>`)
+- The local build trigger endpoint
 
-### Services
+#### Triggering builds
 
-| Service | Required? | Notes |
-|---------|-----------|-------|
-| Xcode + `xcodebuild` | Required (macOS only) | Builds the `.xcodeproj` |
-| iOS Simulator | Required (macOS only) | Runs the built `.app` |
-| Limrun Asset Storage (`lim push`) | Optional | Pushes built artifact to Limrun cloud |
+After editing Swift files, trigger a rebuild:
+
+```bash
+curl http://localhost:3000/xcodebuild
+```
+
+Each build reinstalls the app on the simulator. Wait ~2-3s after the syncer logs the file change before triggering the build to ensure the sync completes.
+
+#### Interacting with the simulator
+
+The simulator exposes an MCP endpoint at `status.mcpUrl` (use the instance token as Bearer auth). Available tools:
+- `screenshot-and-element-tree`: Get current screen state and accessibility tree
+- `mobile-use`: Perform tap/type/scroll/pressKey/wait actions
+- `open-url`: Open URLs in Safari or via deeplinks
+
+To query the instance details programmatically:
+
+```js
+import { Limrun } from '@limrun/api';
+const lim = new Limrun({ apiKey: process.env.LIM_API_KEY });
+const list = await lim.iosInstances.list({ labelSelector: 'name=ios-native-build-example' });
+const inst = list.items[0];
+// inst.status.mcpUrl, inst.status.token
+```
+
+#### Important caveats
+
+- Requires `LIM_API_KEY` environment variable (set via Cursor Secrets)
+- Requires `xdelta3` system package for differential sync
+- The syncer uses `reuseIfExists: true`, so it reuses existing instances with the same label
+- Instances may be deleted after inactivity; just restart the dev server to create a new one
+- On first build trigger after a code change, ensure the sync log line (`sync finished`) appears before triggering `curl /xcodebuild`
+
+### Linting
+
+SwiftLint (`swiftlint lint`) is installed at `/usr/local/bin/swiftlint` (static binary). Run from repo root to lint `.swift` files. The `statement_position` rule is skipped (no SourceKit on Linux).
