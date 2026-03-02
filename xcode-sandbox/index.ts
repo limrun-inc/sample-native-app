@@ -49,7 +49,7 @@ const sandbox = await createXCodeSandboxClient({
 
 // Sync the code to the sandbox
 console.log(`Syncing code from ${codeFolder}...`);
-await sandbox.sync(codeFolder, { watch: true });
+await sandbox.sync(codeFolder, { watch: true, basisCacheDir: '/tmp/limsync-cache' });
 
 // Function to trigger a build
 async function runBuild(onLine: (line: string) => void): Promise<number> {
