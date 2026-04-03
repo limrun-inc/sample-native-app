@@ -1,0 +1,28 @@
+name: Preview
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  preview:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        if: github.event.action != 'closed'
+        run: |
+          xcodebuild build \
+            -scheme sample-native-app \
+            -sdk iphonesimulator \
+            -derivedDataPath build
+
+      - name: Preview
+        uses: limrun-inc/preview-action@main
+        with:
+          app-path: build/Build/Products/Debug-iphonesimulator/sample-native-app.app
+          api-key: ${{ secrets.LIMRUN_API_KEY }}
+          platform: ios
