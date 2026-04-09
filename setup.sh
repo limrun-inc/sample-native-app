@@ -17,9 +17,8 @@ if ! command -v xdelta3 &> /dev/null; then
   fi
 fi
 
-npm -C xcode-sandbox install
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-node xcode-sandbox/index.ts "${SCRIPT_DIR}" &
+npm -C .agents/skills/limrun-skill install
+npx tsx .agents/skills/limrun-skill/limrun-daemon.ts &
 pid=$!
 
 echo "Xcode sandbox running on PID: $pid"
