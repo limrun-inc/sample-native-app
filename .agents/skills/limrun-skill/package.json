@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@limrun/api": "0.23.1",
+    "@limrun/api": "https://pkg.stainless.com/s/limrun-v1-typescript/605481d00064135bc2ce61297f1cec72549dfa44/dist.tar.gz",
     "tsx": "^4.20.5"
   }
 }
