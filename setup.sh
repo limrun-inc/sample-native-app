@@ -18,4 +18,4 @@ if ! command -v xdelta3 &> /dev/null; then
 fi
 
 npm -C .agents/skills/limrun-skill install
-npx tsx .agents/skills/limrun-skill/limrun-cli.ts init
+npx --yes tsx .agents/skills/limrun-skill/limrun-cli.ts init
