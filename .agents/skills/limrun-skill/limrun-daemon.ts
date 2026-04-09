@@ -181,7 +181,7 @@ async function handleInit(socket: net.Socket): Promise<void> {
     wait: true,
     reuseIfExists: true,
     metadata: {
-      labels: { name: 'claude-ios-builder' },
+      labels: { name: 'codex-ios-builder' },
     },
     spec: {
       sandbox: { xcode: { enabled: true } },
