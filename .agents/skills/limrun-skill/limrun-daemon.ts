@@ -416,7 +416,7 @@ server.listen(SOCKET_PATH, () => {
   fs.writeFileSync(PID_FILE, String(process.pid));
   // Make socket accessible
   fs.chmodSync(SOCKET_PATH, 0o600);
-  console.error(`Limrun daemon started (pid ${process.pid})`);
+  console.log(`Limrun daemon started (pid ${process.pid})`);
 });
 
 process.on('SIGTERM', shutdown);

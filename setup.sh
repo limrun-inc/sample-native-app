@@ -18,8 +18,4 @@ if ! command -v xdelta3 &> /dev/null; then
 fi
 
 npm -C .agents/skills/limrun-skill install
-npx tsx .agents/skills/limrun-skill/limrun-daemon.ts &
-pid=$!
-
-echo "Xcode sandbox running on PID: $pid"
-echo "To stop the sandbox, run: kill $pid"
+npx tsx .agents/skills/limrun-skill/limrun-cli.ts init
