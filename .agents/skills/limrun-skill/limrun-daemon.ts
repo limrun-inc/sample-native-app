@@ -14,7 +14,7 @@
 import fs from 'fs';
 import path from 'path';
 import net from 'net';
-import { Limrun, createXCodeSandboxClient, type XCodeSandboxClient } from '@limrun/api';
+import { Limrun, type XcodeClient } from '@limrun/api';
 import { createInstanceClient, type InstanceClient } from '@limrun/api/ios-client.js';
 
 // ---------------------------------------------------------------------------
@@ -80,7 +80,7 @@ async function isInstanceLive(instanceId: string): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 let simulatorClient: InstanceClient | null = null;
-let sandboxClient: XCodeSandboxClient | null = null;
+let sandboxClient: XcodeClient | null = null;
 let currentState: State | null = null;
 
 function stateChanged(): boolean {
@@ -109,15 +109,20 @@ async function getSimulatorClient(): Promise<InstanceClient> {
   return simulatorClient;
 }
 
-async function getSandboxClient(): Promise<XCodeSandboxClient> {
+async function getSandboxClient(): Promise<XcodeClient> {
   if (sandboxClient && !stateChanged()) return sandboxClient;
   const state = loadState();
   if (!state) throw new Error('No active instance. Run "init" first.');
   currentState = state;
-  sandboxClient = await createXCodeSandboxClient({
+  const lim = new Limrun();
+  sandboxClient = await lim.xcodeInstances.createClient({
     apiUrl: state.sandboxUrl,
     token: state.token,
     logLevel: 'error',
+  });
+  await sandboxClient.attachSimulator({
+    apiUrl: state.apiUrl,
+    token: state.token,
   });
   return sandboxClient;
 }
