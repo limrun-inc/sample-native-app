@@ -26,6 +26,6 @@ else
 fi
 
 cd "$LIMRUN_CLI_DIR/packages/cli"
-npm install
+npm run build
 npm link
 cd -
