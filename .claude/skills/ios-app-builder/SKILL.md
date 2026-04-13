@@ -133,49 +133,11 @@ After every build, **always test new/changed functionality** with a lightweight 
 - **Screenshots** only for visual-only properties (colors, gradients, layout aesthetics, animations) that the element tree can't capture.
 - **Direct CLI calls** (not REPL) for the test script -- simpler and the output is captured cleanly in bash variables.
 
-**Write a bash test script** in the project directory (e.g., `test-app.sh`). Structure:
-
-```bash
-#!/bin/bash
-SKILL="${CLAUDE_SKILL_DIR}"
-CLI="npx tsx $SKILL/limrun-cli.ts"
-PASS=0
-FAIL=0
-
-pass() { echo -e "  PASS $1"; PASS=$((PASS + 1)); }
-fail() { echo -e "  FAIL $1 -- $2"; FAIL=$((FAIL + 1)); }
-
-# Helpers
-has_element() { echo "$1" | grep -q "\"AXUniqueId\" : \"$2\""; }
-has_label()   { echo "$1" | grep -q "\"AXLabel\" : \"$2\""; }
-
-# Launch fresh, wait for app to load
-$CLI launch com.app.AppName > /dev/null 2>&1
-sleep 2
-
-# Test flow: tap -> element-tree -> assert
-TREE=$($CLI element-tree 2>&1)
-has_label "$TREE" "Expected Label" && pass "Label present" || fail "Label present" "not found"
-
-$CLI tap-element someButton > /dev/null 2>&1
-TREE=$($CLI element-tree 2>&1)
-has_element "$TREE" "expectedElement" && pass "Element appeared" || fail "Element appeared" "not found"
-
-echo "Results: $PASS passed, $FAIL failed"
-exit $FAIL
-```
-
 **Key rules:**
 
 - Always `sleep 2` after `launch` -- the app needs time to render before `element-tree` returns meaningful results.
 - Use `$CLI tap-element <id>` then `$CLI element-tree` as the core tap->assert loop. No sleep needed between these.
 - Use `PASS=$((PASS + 1))` not `((PASS++))` -- the latter returns exit code 1 when the variable is 0.
-
-## Xcode Project Template
-
-When the user needs a **new** Xcode project from scratch, see [xcode-project-template.md](xcode-project-template.md) for the minimal boilerplate. `PBXFileSystemSynchronizedRootGroup` auto-discovers `.swift` files -- no need to edit `project.pbxproj` when adding files.
-
-Only use this template when creating a brand new project. If the user already has a project, sync and build it as-is.
 
 ## Important Reminders
 
