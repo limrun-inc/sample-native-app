@@ -16,17 +16,3 @@ if ! command -v xdelta3 &> /dev/null; then
     echo "Warning: Unsupported OS for xdelta3 installation. Please install xdelta3 manually."
   fi
 fi
-
-# Install limrun CLI from the typescript-cli branch
-LIMRUN_CLI_DIR="/tmp/limrun-typescript-sdk"
-if [ ! -d "$LIMRUN_CLI_DIR" ]; then
-  git clone --branch typescript-cli --single-branch https://github.com/limrun-inc/typescript-sdk.git "$LIMRUN_CLI_DIR"
-else
-  git -C "$LIMRUN_CLI_DIR" pull
-fi
-
-cd "$LIMRUN_CLI_DIR/packages/cli"
-npm install
-npm run build
-npm link
-cd -
