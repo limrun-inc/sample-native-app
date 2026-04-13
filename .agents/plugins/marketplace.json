@@ -1,0 +1,21 @@
+{
+    "name": "local",
+    "interface": {
+      "displayName": "Local Plugins"
+    },
+    "plugins": [
+      {
+        "name": "build-ios-with-limrun",
+        "source": {
+          "source": "local",
+          "path": "./plugins/build-ios-with-limrun"
+        },
+        "policy": {
+          "installation": "AVAILABLE",
+          "authentication": "ON_INSTALL"
+        },
+        "category": "Coding"
+      }
+    ]
+  }
+  
