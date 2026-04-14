@@ -13,6 +13,8 @@ All builds and simulator operations run on Limrun. Never use local Xcode, local 
 
 Before starting to build with remote XCode or use iOS simulator, run this ONCE:
 ```bash
+# The label should be something to identify this session; could be app name + branch, or some other session identifier you use.
+lim ios create --xcode --reuse-if-exists --label name=sample-native-app-ios-cloud
 lim session start
 ```
 

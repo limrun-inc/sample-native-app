@@ -27,4 +27,4 @@ if ! command -v xdelta3 &> /dev/null; then
 fi
 
 npm install --global @limrun/cli
-lim ios create --xcode --reuse-if-exists --label name=sample-native-app-ios-cloud
+echo "Ready for remote XCode & iOS simulators!"
