@@ -13,30 +13,30 @@ All builds and simulator operations run on Limrun. Never use local Xcode, local 
 
 ## Build and Reload
 
-### 2. Build
+### Build
 
 Instead of `xcodebuild` command, you MUST use the following to build the iOS app.
 
 ```bash
-npx @limrun/cli ios build
+lim xcode build
 ```
 
 Use `--scheme` and `--workspace` flags if the project has multiple schemes or uses a workspace file. Because sync is watching, every build uses the latest code. If the build fails, read the errors, fix the code, and rebuild.
 
 Once the build is completed, the app is re-launched with the new version.
 
-### 3. Verify
+### Verify
 
 After launch, use the element tree as your primary verification method -- it is faster and more reliable than screenshots:
 
 ```bash
-npx @limrun/cli ios element-tree --json
+lim ios element-tree --json
 ```
 
 Use screenshots if you need to verify visual properties (colors, layout, gradients) that the element tree cannot capture:
 
 ```bash
-npx @limrun/cli ios screenshot -o /tmp/limrun-screen.png
+lim ios screenshot -o /tmp/limrun-screen.png
 ```
 
 ## Interacting with the App
@@ -44,9 +44,9 @@ npx @limrun/cli ios screenshot -o /tmp/limrun-screen.png
 Prefer tapping by accessibility identifier, then by label, then by coordinates as a last resort:
 
 ```bash
-npx @limrun/cli ios tap-element --accessibility-id startButton
-npx @limrun/cli ios tap-element --label "Save"
-npx @limrun/cli ios tap 201 450
+lim ios tap-element --accessibility-id startButton
+lim ios tap-element --label "Save"
+lim ios tap 201 450
 ```
 
 After every interaction, re-run `element-tree` to confirm the UI transitioned correctly. No sleep is needed between a tap and element-tree.
@@ -54,7 +54,7 @@ After every interaction, re-run `element-tree` to confirm the UI transitioned co
 For text input:
 
 ```bash
-npx @limrun/cli ios type "hello world"
+lim ios type "hello world"
 ```
 
 ## Testing Changes
@@ -64,14 +64,14 @@ After every build, test new or changed functionality with a lightweight bash tes
 Use element tree for functional assertions (element existence, labels, state changes). Use screenshots only for visual-only properties.
 
 ```bash
-npx @limrun/cli ios launch-app com.example.MyApp
+lim ios launch-app com.example.MyApp
 sleep 2
 
 PASS=0
 FAIL=0
 
 # Test: main screen loads
-TREE=$(npx @limrun/cli ios element-tree --json)
+TREE=$(lim ios element-tree --json)
 if echo "$TREE" | grep -q "welcomeLabel"; then
   echo "PASS: Main screen loaded"
   PASS=$((PASS + 1))
@@ -81,8 +81,8 @@ else
 fi
 
 # Test: tap and verify navigation
-npx @limrun/cli ios tap-element --accessibility-id startButton
-TREE=$(npx @limrun/cli ios element-tree --json)
+lim ios tap-element --accessibility-id startButton
+TREE=$(lim ios element-tree --json)
 if echo "$TREE" | grep -q "detailView"; then
   echo "PASS: Navigated to detail view"
   PASS=$((PASS + 1))
@@ -99,7 +99,7 @@ echo "Results: $PASS passed, $FAIL failed"
 When the user is satisfied or the conversation is ending, always clean up:
 
 ```bash
-npx @limrun/cli delete
+lim ios delete
 ```
 
 ## Gotchas
@@ -111,4 +111,4 @@ These are common failure points. Check here first when something goes wrong.
 - **Use `PASS=$((PASS + 1))` not `((PASS++))`.** The latter returns exit code 1 when the variable is 0, which will abort a `set -e` script.
 - **`element-tree` can be large.** Pipe through `grep` or `jq` to extract what you need rather than dumping the full tree into context.
 - **Build errors are your job to fix.** If a build fails, read the error output, fix the code, and rebuild. Do not ask the user to fix build errors.
-- **Bundle ID discovery.** If you don't know the bundle ID, check the Xcode project files or run `npx @limrun/cli ios list-apps` after a successful build.
+- **Bundle ID discovery.** If you don't know the bundle ID, check the Xcode project files or run `lim ios list-apps` after a successful build.
