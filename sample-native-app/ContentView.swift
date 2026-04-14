@@ -80,14 +80,19 @@ class GameViewModel: ObservableObject {
     }
 
     private func placeCircle() {
-        let padding = circleSize / 2 + 20
-        let safeWidth = screenSize.width - padding * 2
-        let safeHeight = screenSize.height - padding * 2 - 160
+        let circlePad = circleSize / 2 + 12
+        let hudHeight: CGFloat = 230  // safe zone below HUD (score/timer bar)
+        let bottomPad: CGFloat = 50
 
-        guard safeWidth > 0, safeHeight > 0 else { return }
+        let xMin = circlePad
+        let xMax = screenSize.width - circlePad
+        let yMin = hudHeight + circlePad
+        let yMax = screenSize.height - bottomPad - circlePad
 
-        let x = CGFloat.random(in: padding...(padding + safeWidth))
-        let y = CGFloat.random(in: (padding + 80)...(padding + 80 + safeHeight))
+        guard xMax > xMin, yMax > yMin else { return }
+
+        let x = CGFloat.random(in: xMin...xMax)
+        let y = CGFloat.random(in: yMin...yMax)
 
         withAnimation(.easeInOut(duration: 0.35)) {
             circlePosition = CGPoint(x: x, y: y)
