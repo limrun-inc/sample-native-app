@@ -27,3 +27,7 @@ if ! command -v xdelta3 &> /dev/null; then
 fi
 
 npm install --global @limrun/cli
+npx @limrun/cli ios create --xcode --reuse-if-exists --label name=sample-native-app-ios-cloud
+npx @limrun/cli session start &
+npx @limrun/cli ios sync ${SCRIPT_DIR} &
+echo "Session started!"
