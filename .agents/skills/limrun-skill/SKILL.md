@@ -1,6 +1,6 @@
 ---
 name: limrun-skill
-description: "Build, run, and test iOS apps on Limrun cloud simulators and Xcode sandboxes. Handles the full lifecycle: provisioning a cloud simulator, syncing code, building with Xcode, launching the app, interacting with the UI, and capturing screenshots. Use when the user wants to build or run an iOS app, test iOS UI, see their app on a simulator, or says 'run it', 'build it', 'test it', 'show me a screenshot', or 'launch on simulator'. Do NOT use for SwiftUI code advice, architecture discussions, or code review without building."
+description: "Build, run, and test iOS apps on Limrun cloud simulators and Xcode sandboxes. Handles the full lifecycle: provisioning a cloud simulator, syncing code, building with Xcode, launching the app, interacting with the UI, capturing screenshots, and recording demo videos. Use when the user wants to build or run an iOS app, test iOS UI, see their app on a simulator, record a video of the app, or says 'run it', 'build it', 'test it', 'show me a screenshot', 'record a video', or 'launch on simulator'. Do NOT use for SwiftUI code advice, architecture discussions, or code review without building."
 user-invocable: true
 effort: high
 ---
@@ -145,6 +145,48 @@ fi
 
 echo "Results: $PASS passed, $FAIL failed"
 ```
+
+## Video Recording
+
+Use video recording to create a showcase of the finished app. Start recording before performing a demo flow, then stop and save the video. This is especially useful when the user wants to see the app in action or share it with others.
+
+### When to record
+
+Record a video **after the app is fully built and working**. Do not record during debugging or iteration -- only once you have a successful build and verified functionality.
+
+### How to record
+
+1. **Start recording** before launching the app or beginning the demo flow:
+
+   ```bash
+   npx @limrun/cli ios record start
+   ```
+
+2. **Perform the demo flow** -- launch the app, navigate through key screens, interact with features. Use `sleep` between interactions to give the video a natural pace:
+
+   ```bash
+   npx @limrun/cli ios launch-app <bundleId>
+   sleep 2
+   npx @limrun/cli ios tap-element --accessibility-id startButton
+   sleep 1
+   npx @limrun/cli ios scroll down
+   sleep 1
+   ```
+
+3. **Stop recording and save:**
+
+   ```bash
+   npx @limrun/cli ios record stop -o /tmp/app-demo.mp4
+   ```
+
+Share the path to the saved video with the user.
+
+### Tips
+
+- Keep demos short and focused (10-30 seconds). Show the core flow, not every screen.
+- Add `sleep 1` or `sleep 2` between interactions so transitions are visible in the video.
+- Use `--quality 8` on `record start` for higher quality if the user plans to share the video externally.
+- If the app has multiple key flows, record separate videos for each rather than one long video.
 
 ## Cleanup
 
