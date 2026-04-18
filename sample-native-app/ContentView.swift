@@ -243,7 +243,7 @@ struct GameView: View {
 
     private let minCircleSize: CGFloat = 44
     private let maxCircleSize: CGFloat = 120
-    private let shrinkAmount: CGFloat = 8
+    private let shrinkAmount: CGFloat = 14
 
     private let circleColors: [Color] = [
         Color(hex: "e94560"), Color(hex: "f39c12"), Color(hex: "2ecc71"),
@@ -409,15 +409,20 @@ struct GameView: View {
 
     private func startCountdown() {
         gameTimer?.invalidate()
+        gameTimer = nil
         let tick: Double = 0.05
-        gameTimer = Timer.scheduledTimer(withTimeInterval: tick, repeats: true) { t in
-            if timeRemaining <= 0 {
-                t.invalidate()
-                triggerGameOver()
-            } else {
-                timeRemaining = max(0, timeRemaining - tick)
+        let timer = Timer(timeInterval: tick, repeats: true) { [self] t in
+            DispatchQueue.main.async {
+                if timeRemaining <= 0 {
+                    t.invalidate()
+                    triggerGameOver()
+                } else {
+                    timeRemaining = max(0, timeRemaining - tick)
+                }
             }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        gameTimer = timer
     }
 
     private func handleCircleTap() {
@@ -457,7 +462,10 @@ struct GameView: View {
     }
 
     private func triggerGameOver() {
+        guard !isTransitioning else { return }
         isTransitioning = true
+        gameTimer?.invalidate()
+        gameTimer = nil
         withAnimation(.spring(response: 0.28, dampingFraction: 0.5)) {
             circleScale = 1.5
         }
