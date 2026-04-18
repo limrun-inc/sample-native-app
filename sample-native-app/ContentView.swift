@@ -77,7 +77,9 @@ final class GameViewModel: ObservableObject {
         circleOpacity = 0
         circleScale = 0.1
         timeRemaining = selectedInterval
-        phase = .playing
+        withAnimation(.easeInOut(duration: 0.35)) {
+            phase = .playing
+        }
         if playAreaSize != .zero {
             needsCirclePlacement = false
             placeCircle(animated: true)
@@ -132,17 +134,22 @@ final class GameViewModel: ObservableObject {
         isRepositioning = false
         tapGeneration = 0
         needsCirclePlacement = false
-        phase = .start
+        withAnimation(.easeInOut(duration: 0.35)) {
+            phase = .start
+        }
     }
 
     // MARK: - Private helpers
+
+    // Top offset to keep circles below the HUD (approx 100pt: safe area + HUD height)
+    @Published var hudHeight: CGFloat = 100
 
     private func placeCircle(animated: Bool) {
         guard playAreaSize != .zero else { return }
         let margin = circleRadius + 16
         let minX = margin
         let maxX = playAreaSize.width - margin
-        let minY = margin
+        let minY = hudHeight + margin
         let maxY = playAreaSize.height - margin
 
         guard maxX > minX, maxY > minY else { return }
@@ -196,7 +203,9 @@ final class GameViewModel: ObservableObject {
             circleScale = 0.1
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-            self?.phase = .gameOver
+            withAnimation(.easeInOut(duration: 0.35)) {
+                self?.phase = .gameOver
+            }
         }
     }
 }
@@ -210,15 +219,14 @@ struct ContentView: View {
         ZStack {
             if vm.phase == .start {
                 StartView(vm: vm)
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.97)),
-                        removal: .opacity.combined(with: .scale(scale: 1.03))
-                    ))
+                    .transition(.opacity)
                     .zIndex(1)
+                    .id("start")
             } else if vm.phase == .playing {
                 PlayView(vm: vm)
                     .transition(.opacity)
                     .zIndex(2)
+                    .id("playing")
             } else {
                 GameOverView(vm: vm)
                     .transition(.asymmetric(
@@ -226,6 +234,7 @@ struct ContentView: View {
                         removal: .opacity
                     ))
                     .zIndex(3)
+                    .id("gameover")
             }
         }
         .animation(.easeInOut(duration: 0.4), value: vm.phase)
@@ -238,76 +247,78 @@ struct StartView: View {
     @ObservedObject var vm: GameViewModel
 
     var body: some View {
-        ZStack {
-            backgroundGradient
-            VStack(spacing: 36) {
-                Spacer()
+        GeometryReader { geo in
+            ZStack {
+                backgroundGradient
+                VStack(spacing: 36) {
+                    Spacer()
 
-                // Title
-                VStack(spacing: 8) {
-                    Text("Speedy")
-                        .font(.system(size: 54, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white)
-                    Text("Circles")
-                        .font(.system(size: 54, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.85))
-                }
-                .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                    // Title
+                    VStack(spacing: 8) {
+                        Text("Speedy")
+                            .font(.system(size: 54, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white)
+                        Text("Circles")
+                            .font(.system(size: 54, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                    .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
 
-                // Decorative circles
-                decorativeCircles
+                    // Decorative circles
+                    decorativeCircles
 
-                // Interval picker
-                VStack(spacing: 12) {
-                    Text("Time per circle")
-                        .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.75))
-                        .textCase(.uppercase)
-                        .tracking(1.2)
+                    // Interval picker
+                    VStack(spacing: 12) {
+                        Text("Time per circle")
+                            .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.75))
+                            .textCase(.uppercase)
+                            .tracking(1.2)
 
-                    HStack(spacing: 12) {
-                        ForEach(vm.intervalOptions, id: \.self) { interval in
-                            IntervalButton(
-                                label: String(format: "%.0fs", interval),
-                                isSelected: vm.selectedInterval == interval
-                            ) {
-                                withAnimation(.spring(response: 0.3)) {
-                                    vm.selectedInterval = interval
+                        HStack(spacing: 12) {
+                            ForEach(vm.intervalOptions, id: \.self) { interval in
+                                IntervalButton(
+                                    label: String(format: "%.0fs", interval),
+                                    isSelected: vm.selectedInterval == interval
+                                ) {
+                                    withAnimation(.spring(response: 0.3)) {
+                                        vm.selectedInterval = interval
+                                    }
                                 }
                             }
                         }
                     }
+                    .padding(.horizontal, 32)
+
+                    Spacer()
+
+                    // Start button
+                    Button {
+                        vm.startGame()
+                    } label: {
+                        Text("Start")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 18)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .fill(.white.opacity(0.22))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                            .stroke(.white.opacity(0.35), lineWidth: 1.5)
+                                    )
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 32)
+                    .accessibilityIdentifier("startButton")
+
+                    Spacer().frame(height: max(geo.safeAreaInsets.bottom, 20) + 16)
                 }
-                .padding(.horizontal, 32)
-
-                Spacer()
-
-                // Start button
-                Button {
-                    vm.startGame()
-                } label: {
-                    Text("Start")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                .fill(.white.opacity(0.22))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                        .stroke(.white.opacity(0.35), lineWidth: 1.5)
-                                )
-                        )
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 32)
-                .accessibilityIdentifier("startButton")
-
-                Spacer().frame(height: 36)
             }
+            .ignoresSafeArea()
         }
-        .ignoresSafeArea()
     }
 
     private var backgroundGradient: some View {
@@ -410,6 +421,9 @@ struct PlayView: View {
             }
             .onAppear {
                 vm.setPlayArea(geo.size)
+                // HUD is ~90pt: safe area top + padding(8+8) + HUD height(64) + margin
+                let hudH = max(geo.safeAreaInsets.top, 16) + 8 + 64 + 16
+                vm.hudHeight = hudH
             }
             .onChange(of: geo.size) { _, newSize in
                 vm.setPlayArea(newSize)
@@ -497,6 +511,7 @@ struct GameOverView: View {
     @State private var pulsing = false
 
     var body: some View {
+        GeometryReader { geo in
         ZStack {
             backgroundGradient
 
@@ -572,10 +587,11 @@ struct GameOverView: View {
                 .padding(.horizontal, 32)
                 .accessibilityIdentifier("retryButton")
 
-                Spacer().frame(height: 36)
+                Spacer().frame(height: max(geo.safeAreaInsets.bottom, 20) + 16)
             }
         }
         .ignoresSafeArea()
+        }
     }
 
     private var backgroundGradient: some View {
