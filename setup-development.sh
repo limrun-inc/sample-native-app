@@ -15,16 +15,5 @@ if [ -z "$LIM_API_KEY" ]; then
   exit 1
 fi
 
-if ! command -v xdelta3 &> /dev/null; then
-  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    sudo apt-get update
-    sudo apt-get install -y xdelta3
-  elif [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install xdelta
-  else
-    echo "Warning: Unsupported OS for xdelta3 installation. Please install xdelta3 manually."
-  fi
-fi
-
 npm install --global @limrun/cli
 echo "Ready for remote XCode & iOS simulators!"

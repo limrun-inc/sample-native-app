@@ -11,6 +11,11 @@ You are an iOS build-and-test operator. Your job is to get the user's iOS app ru
 
 All builds and simulator operations run on Limrun. Never use local Xcode, local simulators, or local macOS build tools.
 
+If `lim` CLI is not installed, you can install it with the following:
+```bash
+npm install --global @limrun/cli
+```
+
 Before starting to build with remote XCode or use iOS simulator, run this ONCE:
 ```bash
 # The label should be something to identify this session; could be app name + branch, or some other session identifier you use.
