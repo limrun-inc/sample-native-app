@@ -10,7 +10,7 @@ import Combine
 
 // MARK: - Game State
 
-enum GamePhase {
+enum GamePhase: Equatable {
     case start
     case playing
     case gameOver
@@ -42,6 +42,9 @@ final class GameViewModel: ObservableObject {
     private let minRadius: CGFloat = 28
     private let maxRadius: CGFloat = 80
     private let tickInterval: Double = 0.05
+    // Generation counter to discard stale async callbacks
+    private var tapGeneration: Int = 0
+    private var isRepositioning: Bool = false
 
     private let palette: [Color] = [
         .blue, .red, .orange, .purple, .green, .pink, .cyan, .indigo
@@ -49,24 +52,55 @@ final class GameViewModel: ObservableObject {
 
     // MARK: - Public API
 
+    private var needsCirclePlacement: Bool = false
+
     func setPlayArea(_ size: CGSize) {
+        let changed = size != playAreaSize
         playAreaSize = size
+        // Place circle and start timer if deferred from startGame()
+        if changed && needsCirclePlacement && phase == .playing {
+            needsCirclePlacement = false
+            placeCircle(animated: true)
+            // Timer was paused waiting for layout; start now
+            if timer == nil {
+                startTimer()
+            }
+        }
     }
 
     func startGame() {
         score = 0
         circleRadius = maxRadius
         circleColor = randomColor(excluding: nil)
-        placeCircle(animated: false)
+        isRepositioning = false
+        tapGeneration = 0
+        circleOpacity = 0
+        circleScale = 0.1
         timeRemaining = selectedInterval
         phase = .playing
-        startTimer()
+        if playAreaSize != .zero {
+            needsCirclePlacement = false
+            placeCircle(animated: true)
+            startTimer()
+        } else {
+            // Defer placement and timer until PlayView reports its size
+            needsCirclePlacement = true
+        }
     }
 
     func circleTapped() {
-        guard phase == .playing else { return }
+        // Ignore taps during repositioning or when not playing
+        guard phase == .playing, !isRepositioning else { return }
 
+        isRepositioning = true
         score += 1
+
+        // Immediately stop the current timer to prevent timeout during repositioning
+        stopTimer()
+
+        // Bump generation so any in-flight asyncAfter callbacks are stale
+        tapGeneration += 1
+        let myGeneration = tapGeneration
 
         // Shrink the circle (floor at minRadius)
         let newRadius = max(minRadius, circleRadius - 6)
@@ -79,17 +113,25 @@ final class GameViewModel: ObservableObject {
             circleScale = 0.1
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.13) { [weak self] in
-            guard let self else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) { [weak self] in
+            guard let self,
+                  self.phase == .playing,
+                  self.tapGeneration == myGeneration else { return }
             self.circleRadius = newRadius
             self.circleColor = newColor
             self.placeCircle(animated: true)
             self.timeRemaining = self.selectedInterval
+            self.isRepositioning = false
+            // Restart timer for the new circle
+            self.startTimer()
         }
     }
 
     func retry() {
         stopTimer()
+        isRepositioning = false
+        tapGeneration = 0
+        needsCirclePlacement = false
         phase = .start
     }
 
@@ -166,25 +208,27 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            switch vm.phase {
-            case .start:
+            if vm.phase == .start {
                 StartView(vm: vm)
                     .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.95)),
-                        removal: .opacity.combined(with: .scale(scale: 1.05))
+                        insertion: .opacity.combined(with: .scale(scale: 0.97)),
+                        removal: .opacity.combined(with: .scale(scale: 1.03))
                     ))
-            case .playing:
+                    .zIndex(1)
+            } else if vm.phase == .playing {
                 PlayView(vm: vm)
                     .transition(.opacity)
-            case .gameOver:
+                    .zIndex(2)
+            } else {
                 GameOverView(vm: vm)
                     .transition(.asymmetric(
                         insertion: .opacity.combined(with: .move(edge: .bottom)),
                         removal: .opacity
                     ))
+                    .zIndex(3)
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: vm.phase)
+        .animation(.easeInOut(duration: 0.4), value: vm.phase)
     }
 }
 
@@ -332,13 +376,7 @@ struct PlayView: View {
                 Color(red: 0.09, green: 0.09, blue: 0.15)
                     .ignoresSafeArea()
 
-                // HUD
-                VStack {
-                    hud(safeArea: geo.safeAreaInsets)
-                    Spacer()
-                }
-
-                // Circle
+                // Circle (behind HUD)
                 Circle()
                     .fill(
                         RadialGradient(
@@ -363,6 +401,12 @@ struct PlayView: View {
                     .accessibilityIdentifier("gameCircle")
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: vm.circleRadius)
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: vm.circleColor)
+
+                // HUD on top
+                VStack {
+                    hud(safeArea: geo.safeAreaInsets)
+                    Spacer()
+                }
             }
             .onAppear {
                 vm.setPlayArea(geo.size)
