@@ -6,11 +6,37 @@ struct GameView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                // Background
                 backgroundGradient
                     .ignoresSafeArea()
 
-                // HUD - Score and Timer at top
+                // The circle (only show once position is valid)
+                if viewModel.gameState == .playing {
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [viewModel.circleColor.opacity(0.95), viewModel.circleColor],
+                                center: .topLeading,
+                                startRadius: 0,
+                                endRadius: viewModel.circleSize
+                            )
+                        )
+                        .overlay(
+                            Circle()
+                                .stroke(.white.opacity(0.35), lineWidth: 3)
+                        )
+                        .shadow(color: viewModel.circleColor.opacity(0.6), radius: 18, y: 6)
+                        .frame(width: viewModel.circleSize, height: viewModel.circleSize)
+                        .position(viewModel.circlePosition)
+                        .onTapGesture {
+                            viewModel.circleTapped()
+                        }
+                        .animation(.spring(response: 0.4, dampingFraction: 0.65), value: viewModel.circlePosition)
+                        .animation(.easeInOut(duration: 0.25), value: viewModel.circleSize)
+                        .animation(.easeInOut(duration: 0.2), value: viewModel.circleColor)
+                        .accessibilityIdentifier("gameCircle")
+                }
+
+                // HUD pinned to top safe area
                 VStack(spacing: 0) {
                     HUDBar(score: viewModel.score,
                            timeRemaining: viewModel.timeRemaining,
@@ -19,36 +45,10 @@ struct GameView: View {
                         .padding(.horizontal, 20)
                     Spacer()
                 }
-
-                // The circle
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [viewModel.circleColor.opacity(0.95), viewModel.circleColor],
-                            center: .topLeading,
-                            startRadius: 0,
-                            endRadius: viewModel.circleSize
-                        )
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(.white.opacity(0.35), lineWidth: 3)
-                    )
-                    .shadow(color: viewModel.circleColor.opacity(0.6), radius: 18, y: 6)
-                    .frame(width: viewModel.circleSize, height: viewModel.circleSize)
-                    .position(viewModel.circlePosition)
-                    .onTapGesture {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                            viewModel.circleTapped()
-                        }
-                    }
-                    .animation(.spring(response: 0.4, dampingFraction: 0.65), value: viewModel.circlePosition)
-                    .animation(.easeInOut(duration: 0.25), value: viewModel.circleSize)
-                    .animation(.easeInOut(duration: 0.2), value: viewModel.circleColor)
-                    .accessibilityIdentifier("gameCircle")
             }
             .onAppear {
-                viewModel.configure(screenSize: geo.size)
+                viewModel.configure(screenSize: geo.size, topSafeArea: geo.safeAreaInsets.top)
+                viewModel.beginGameplay()
             }
         }
     }
@@ -71,8 +71,8 @@ struct HUDBar: View {
     let totalTime: Double
 
     private var timerFraction: Double {
-        guard totalTime > 0 else { return 0 }
-        return timeRemaining / totalTime
+        guard totalTime > 0 else { return 1 }
+        return min(max(timeRemaining / totalTime, 0), 1)
     }
 
     private var timerColor: Color {
@@ -104,7 +104,7 @@ struct HUDBar: View {
 
             // Timer pill
             HStack(spacing: 8) {
-                // Circular progress ring
+                // Circular countdown ring (depletes as time runs out)
                 ZStack {
                     Circle()
                         .stroke(.white.opacity(0.2), lineWidth: 3)
@@ -113,7 +113,8 @@ struct HUDBar: View {
                         .trim(from: 0, to: timerFraction)
                         .stroke(timerColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                         .frame(width: 28, height: 28)
-                        .rotationEffect(.degrees(-90))
+                        .rotationEffect(.degrees(90))
+                        .scaleEffect(x: -1, y: 1)
                         .animation(.linear(duration: 0.05), value: timerFraction)
                 }
 
@@ -136,11 +137,7 @@ struct HUDBar: View {
 #Preview {
     GameView(viewModel: {
         let vm = GameViewModel()
-        vm.gameState = .playing
-        vm.score = 5
-        vm.timeRemaining = 2.1
-        vm.circlePosition = CGPoint(x: 200, y: 400)
-        vm.circleSize = 90
+        vm.startGame(interval: 3.0)
         return vm
     }())
 }
