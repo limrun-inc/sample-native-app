@@ -11,10 +11,10 @@ First, you need to get an API key from [Limrun Console](https://console.limrun.c
 export LIM_API_KEY=lim_....
 ```
 
-Run the following script which will install dependencies and `lim` CLI.
+Install `lim` CLI.
 
 ```bash
-./setup-development.sh
+npm install --global @limrun/cli
 ```
 
 That's it! Now, make sure to recognize the skills stored in `.agents/skills` folder

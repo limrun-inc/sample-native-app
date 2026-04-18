@@ -6,6 +6,11 @@ such as Linux.
 During development, you MUST use xcode-and-simulator skill to build the app and
 test it in the simulator using `lim` CLI.
 
+Install `lim` CLI:
+```bash
+npm install --global @limrun/cli
+```
+
 ## Cloud specific instructions
 
 - The bundle ID is `com.limrun.sample-native-app`.
