@@ -23,6 +23,9 @@ lim ios create --xcode --reuse-if-exists --label name=sample-native-app-ios-clou
 lim session start
 ```
 
+Once the instance is created, if you have a browser, open the signed stream URL.
+If you don't have a browser, return that to user to click so they can see what you are doing in the simulator.
+
 ## Build and Reload
 
 ### Build
@@ -30,7 +33,7 @@ lim session start
 Instead of `xcodebuild` command, you MUST use the following to build the iOS app.
 
 ```bash
-lim xcode build
+lim xcode build .
 ```
 
 Use `--scheme` and `--workspace` flags if the project has multiple schemes or uses a workspace file. Because sync is watching, every build uses the latest code. If the build fails, read the errors, fix the code, and rebuild.
@@ -105,6 +108,25 @@ fi
 
 echo "Results: $PASS passed, $FAIL failed"
 ```
+
+## Finalize
+
+You can make xcode upload the final build and provide a preview link to the user can click and start testing themselves.
+If you will open a PR, make sure to do this and add the preview link to PR.
+
+First build and upload:
+```
+ASSET_NAME="<bundle id/pr number/ or any session identifier>.zip"
+lim xcode build . --upload ${ASSET_NAME}
+```
+
+And this is the link for preview:
+```
+# Change ${ASSET_NAME} with asset name given above
+https://console.limrun.com/preview?asset=${ASSET_NAME}&platform=ios
+```
+
+Users can click and access a simulator where this final build is pre-installed and running.
 
 ## Cleanup
 
