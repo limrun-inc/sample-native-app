@@ -2,20 +2,21 @@
 //  ContentView.swift
 //  sample-native-app
 //
-//  Created by Muvaffak on 1/16/26.
-//
 
 import SwiftUI
+import UIKit
+
+struct GameViewRepresentable: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> GameViewController {
+        return GameViewController()
+    }
+    func updateUIViewController(_ uiViewController: GameViewController, context: Context) {}
+}
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        GameViewRepresentable()
+            .ignoresSafeArea()
     }
 }
 
