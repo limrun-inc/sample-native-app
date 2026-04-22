@@ -56,8 +56,8 @@ lim ios screenshot -o /tmp/limrun-screen.png
 Prefer tapping by accessibility identifier, then by label, then by coordinates as a last resort:
 
 ```bash
-lim ios tap-element --accessibility-id startButton
-lim ios tap-element --label "Save"
+lim ios tap-element --ax-unique-id startButton
+lim ios tap-element --ax-label "Save"
 lim ios tap 201 450
 ```
 
@@ -93,7 +93,7 @@ else
 fi
 
 # Test: tap and verify navigation
-lim ios tap-element --accessibility-id startButton
+lim ios tap-element --ax-unique-id startButton
 TREE=$(lim ios element-tree --json)
 if echo "$TREE" | grep -q "detailView"; then
   echo "PASS: Navigated to detail view"
