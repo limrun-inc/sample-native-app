@@ -173,9 +173,10 @@ struct ContentView: View {
             spawnObstacle()
         }
 
-        obstacles = obstacles
-            .map { Obstacle(lane: $0.lane, y: $0.y + 10) }
-            .filter { $0.y < screenSize.height + 100 }
+        for index in obstacles.indices {
+            obstacles[index].y += 10
+        }
+        obstacles.removeAll { $0.y >= screenSize.height + 100 }
 
         score += 1
 
