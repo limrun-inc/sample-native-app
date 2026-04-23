@@ -15,5 +15,5 @@ jobs:
       - name: Build and Preview
         uses: limrun-inc/preview-action@1ace39cdb3b1e1e42b51df6dabdb41c175711771
         with:
-          api-key: ${{ secrets.LIMRUN_API_KEY }}
+          api-key: ${{ secrets.LIM_API_KEY }}
           project-path: .
