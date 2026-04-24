@@ -54,7 +54,8 @@ struct ContentView: View {
             Button("Reset") {
                 count = 0
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.bordered)
+            .controlSize(.large)
             .font(.headline)
             .accessibilityIdentifier("resetButton")
         }
