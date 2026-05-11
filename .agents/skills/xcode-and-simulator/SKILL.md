@@ -18,17 +18,20 @@ If `lim` CLI is not installed, you can install it with the following:
 npm install --global @limrun/cli
 ```
 
-Before starting to build with remote XCode or use iOS simulator, run this ONCE:
+## Build and Reload
+
+First, create an XCode & iOS Simulator pair:
 ```bash
-# The label should be something to identify this session; could be app name + branch, or some other session identifier you use.
-lim ios create --xcode --reuse-if-exists --label name=sample-native-app-ios-cloud
-lim session start
+# Add label selector depending on your identifiers. For example, Linear issue, repo name etc.
+lim ios create --xcode \
+  --reuse-if-exists \
+  --label issue=<ISSUE ID> \
+  --label repo=<Repo Name> \
+  --label agent=<Your Agent Name>
+# Example call: lim xcode create --reuse-if-exists --label issue=LIM-34 --label repo=sample-native-app --label agent=cursor
 ```
 
-Once the instance is created, tell the user about signed stream URL so that they
-can watch while you are building.
-
-## Build and Reload
+In the command output, there will be a signed stream URL. Share that with user so that they can watch the simulator while you are working.
 
 ### Build
 
@@ -41,34 +44,7 @@ lim xcode build .
 Use `--scheme` and `--workspace` flags if the project has multiple schemes or uses a workspace file. This makes sure the files are synced with the remote xcode and triggers
 a build where the build logs are streamed through stdout and stderr.
 
-Once the build is completed, the app is re-launched with the new version. You don't
-need to call launch-app command separately.
-
-### Verify
-
-After launch, use the element tree as your primary verification method -- it is faster and more reliable than screenshots:
-
-```bash
-lim ios element-tree --json
-```
-
-Use screenshots if you need to verify visual properties (colors, layout, gradients) that the element tree cannot capture:
-
-```bash
-lim ios screenshot -o /tmp/limrun-screen.png
-```
-
-If you would like to record, you should use the recording functionality of the simulator.
-
-Start recording (non-blocking):
-```bash
-lim ios record start
-```
-
-Stop and save recording:
-```bash
-lim ios record stop -o /tmp/recording.mp4
-```
+Every successful build will automatically re-install the app in iOS Simulator and re-launch it.
 
 ## Interacting with the App
 
@@ -122,6 +98,19 @@ lim ios perform --file ./actions.yaml
 ```
 
 Use `lim ios perform --help` for more details on how to use it.
+
+Video recording is available so you can review what the user sees while you are taking actions.
+Always include a demo video in the pull request so that user can see how it works.
+
+Start recording (non-blocking):
+```bash
+lim ios record start
+```
+
+Stop and save recording:
+```bash
+lim ios record stop -o /tmp/recording.mp4
+```
 
 ## Finalize
 
