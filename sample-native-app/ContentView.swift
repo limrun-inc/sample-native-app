@@ -24,7 +24,17 @@ struct ContentView: View {
                         signedInUser = credential
                     },
                     onFailure: { error in
-                        errorMessage = error.localizedDescription
+                        let message = error.localizedDescription
+                        errorMessage = message
+                        Task { @MainActor in
+                            try? await Task.sleep(for: .seconds(4))
+                            if errorMessage == message {
+                                errorMessage = nil
+                            }
+                        }
+                    },
+                    onRequest: {
+                        errorMessage = nil
                     }
                 )
                 .overlay(alignment: .top) {

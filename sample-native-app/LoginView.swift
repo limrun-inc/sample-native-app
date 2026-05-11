@@ -11,6 +11,7 @@ struct LoginView: View {
 
     var onSignIn: (AppleIDCredential) -> Void
     var onFailure: (Error) -> Void
+    var onRequest: () -> Void = {}
 
     var body: some View {
         ZStack {
@@ -53,6 +54,7 @@ struct LoginView: View {
                         .signIn,
                         onRequest: { request in
                             request.requestedScopes = [.fullName, .email]
+                            onRequest()
                         },
                         onCompletion: { result in
                             switch result {
@@ -61,6 +63,14 @@ struct LoginView: View {
                                     onSignIn(AppleIDCredential(credential: credential))
                                 }
                             case .failure(let error):
+                                if let authError = error as? ASAuthorizationError {
+                                    switch authError.code {
+                                    case .canceled, .unknown:
+                                        return
+                                    default:
+                                        break
+                                    }
+                                }
                                 onFailure(error)
                             }
                         }
@@ -77,8 +87,9 @@ struct LoginView: View {
                         .padding(.horizontal, 24)
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 32)
+                .padding(.bottom, 24)
             }
+            .safeAreaPadding(.bottom, 24)
         }
     }
 }
