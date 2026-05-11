@@ -99,7 +99,9 @@ lim ios perform --file ./actions.yaml
 
 Use `lim ios perform --help` for more details on how to use it.
 
-Video recording is available so you can review what the user sees while you are taking actions.
+Video recording is available so you can review what the user sees while you are taking actions. For
+any testing involving motion prefer video over screenshots for review.
+
 Always include a demo video in the pull request so that user can see how it works.
 
 Start recording (non-blocking):
@@ -211,10 +213,10 @@ FLAGS
 
       YAML example:
       - type: tap
-      x: 100
-      y: 200
+        x: 100
+        y: 200
       - type: typeText
-      text: "Hello World"
+        text: "Hello World"
 
   --action=<value>...
       Action definition as comma-separated key=value pairs; repeat for multiple
