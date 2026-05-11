@@ -41,9 +41,13 @@ private struct GameHUD: View {
             )
             .accessibilityIdentifier("gestureCatcher")
 
-            // TimelineView ticks every frame so the score/status reflect live state.
+            // TimelineView ticks every frame. We snapshot the live game-state
+            // values into the LiveHUD struct so SwiftUI's diff sees a different
+            // view input each tick and re-renders the score / game-over panel.
             TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { _ in
-                LiveHUD(world: world,
+                LiveHUD(score: world.score,
+                        speed: world.speed,
+                        isGameOver: world.isGameOver,
                         onRestart: { world.restart() })
             }
         }
@@ -51,7 +55,9 @@ private struct GameHUD: View {
 }
 
 private struct LiveHUD: View {
-    let world: GameWorld
+    let score: Int
+    let speed: Float
+    let isGameOver: Bool
     let onRestart: () -> Void
 
     var body: some View {
@@ -62,7 +68,7 @@ private struct LiveHUD: View {
                         .font(.caption)
                         .fontWeight(.heavy)
                         .foregroundStyle(.white.opacity(0.85))
-                    Text("\(world.score)")
+                    Text("\(score)")
                         .font(.system(size: 42, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.5), radius: 3, y: 2)
@@ -74,7 +80,7 @@ private struct LiveHUD: View {
                         .font(.caption)
                         .fontWeight(.heavy)
                         .foregroundStyle(.white.opacity(0.85))
-                    Text(String(format: "%.0f", world.speed))
+                    Text(String(format: "%.0f", speed))
                         .font(.system(size: 28, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.5), radius: 3, y: 2)
@@ -85,7 +91,7 @@ private struct LiveHUD: View {
 
             Spacer()
 
-            if !world.isGameOver {
+            if !isGameOver {
                 Text("Swipe to dodge — Tap or swipe up to jump")
                     .font(.footnote)
                     .fontWeight(.semibold)
@@ -110,7 +116,7 @@ private struct LiveHUD: View {
                 .shadow(color: .black.opacity(0.6), radius: 4, y: 3)
                 .accessibilityIdentifier("gameOverLabel")
 
-            Text("Final Score: \(world.score)")
+            Text("Final Score: \(score)")
                 .font(.title3.weight(.bold))
                 .foregroundStyle(.white)
 

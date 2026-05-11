@@ -124,12 +124,17 @@ final class Renderer: NSObject, MTKViewDelegate {
         encoder.setCullMode(.back)
         encoder.setFrontFacing(.counterClockwise)
 
-        // Camera follows just behind and above the hero, looking forward (-Z).
+        // Camera sits high and well behind the hero, angled downward so the
+        // chase reads as a three-tier composition: police low on screen, hero
+        // in the middle, obstacles above. The camera pulls back further when
+        // the player is caught to dramatize the police closing in.
         let heroX = world.heroLane * GameWorld.laneOffset
-        let cameraPos = SIMD3<Float>(heroX * 0.35, 3.4, 6.2)
-        let lookTarget = SIMD3<Float>(heroX * 0.55, 1.2, -6.0)
+        let pullback: Float = world.isGameOver ? 10.5 : 9.5
+        let height:   Float = world.isGameOver ? 5.0  : 5.6
+        let cameraPos  = SIMD3<Float>(heroX * 0.20, height, pullback)
+        let lookTarget = SIMD3<Float>(heroX * 0.40, 0.0, -8.0)
         let view4x4 = MathUtils.lookAt(eye: cameraPos, center: lookTarget, up: SIMD3(0, 1, 0))
-        let proj = MathUtils.perspective(fovyRadians: .pi / 3,
+        let proj = MathUtils.perspective(fovyRadians: 75 * .pi / 180,
                                          aspect: aspect,
                                          nearZ: 0.1,
                                          farZ: 200)
@@ -308,8 +313,11 @@ final class Renderer: NSObject, MTKViewDelegate {
     }
 
     private func drawPolice(encoder: MTLRenderCommandEncoder) {
-        // Police runs in the same lane as the hero, just behind them.
-        let x = world.heroLane * GameWorld.laneOffset
+        // Police runs behind the hero, slightly offset to the right so the
+        // hero stays clearly visible in front of the chaser at all times
+        // (including the "CAUGHT!" pose).
+        let lateralOffset: Float = 0.55
+        let x = world.heroLane * GameWorld.laneOffset + lateralOffset
         let z = world.policeDistance
         let bob = sinf(world.heroRun * 0.9 + 1.0) * 0.05
 

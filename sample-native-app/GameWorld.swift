@@ -28,9 +28,9 @@ final class GameWorld {
     static let policeHeight: Float = 1.5
     static let jumpVelocity: Float = 9.5
     static let gravity: Float = 26.0
-    static let initialSpeed: Float = 11.0
-    static let maxSpeed: Float = 26.0
-    static let speedRamp: Float = 0.18         // units per second, per second
+    static let initialSpeed: Float = 9.0
+    static let maxSpeed: Float = 24.0
+    static let speedRamp: Float = 0.16         // units per second, per second
 
     // MARK: - Obstacle definition
 
@@ -65,12 +65,15 @@ final class GameWorld {
     private(set) var heroRun: Float = 0     // running animation phase
     private(set) var distance: Float = 0
     private(set) var speed: Float = GameWorld.initialSpeed
-    private(set) var policeDistance: Float = 4.0   // how far the police is behind the hero (positive Z)
+    private(set) var policeDistance: Float = 5.0   // how far the police is behind the hero (positive Z)
     private(set) var obstacles: [Obstacle] = []
     private(set) var score: Int = 0
     private(set) var isGameOver: Bool = false
 
-    private var spawnCursorZ: Float = -25
+    /// Short window after each (re)start where the hero is invincible so the
+    /// player can settle in. Counts down to zero in update().
+    private(set) var graceTimer: Float = 1.0
+    private var spawnCursorZ: Float = -55
     private var rng = SystemRandomNumberGenerator()
 
     init() {
@@ -104,11 +107,12 @@ final class GameWorld {
         heroVY = 0
         distance = 0
         speed = GameWorld.initialSpeed
-        policeDistance = 4.0
+        policeDistance = 5.0
         obstacles.removeAll()
-        spawnCursorZ = -25
+        spawnCursorZ = -55
         isGameOver = false
         score = 0
+        graceTimer = 1.0
         for _ in 0..<6 { spawnNextObstacle() }
     }
 
@@ -126,6 +130,7 @@ final class GameWorld {
         distance += speed * dt
         score = Int(distance)
         heroRun += dt * speed * 1.6
+        if graceTimer > 0 { graceTimer = max(0, graceTimer - dt) }
 
         // Smoothly move the hero toward the target lane.
         let target = Float(heroLaneTarget)
@@ -146,8 +151,10 @@ final class GameWorld {
             obstacles[i].z += speed * dt
         }
 
-        // Recycle obstacles that have passed behind the camera.
-        obstacles.removeAll { $0.z > 6 }
+        // Recycle obstacles as soon as they pass the hero. Otherwise the
+        // high follow-cam would briefly render them between the camera and
+        // the hero, occluding the player.
+        obstacles.removeAll { $0.z > 1.0 }
 
         // Spawn new obstacles to keep the track populated.
         while spawnCursorZ + speed * dt > -GameWorld.trackHalfLength + 20 {
@@ -164,34 +171,36 @@ final class GameWorld {
         let heroHalfW: Float = GameWorld.heroWidth * 0.5
         let heroHalfD: Float = 0.45
 
-        for obs in obstacles {
-            let obsX = Float(obs.lane) * GameWorld.laneOffset
-            let dx = abs(heroX - obsX)
-            let dz = abs(0 - obs.z)
-            let obsHalfW = obs.size.x * 0.5
-            let obsHalfD = obs.size.z * 0.5
-            let obsMaxY = obs.size.y
-            if dx < (heroHalfW + obsHalfW) * 0.85 &&
-               dz < (heroHalfD + obsHalfD) * 0.85 &&
-               heroMinY < obsMaxY - 0.05 &&
-               heroMaxY > 0 {
-                triggerGameOver()
-                break
+        if graceTimer <= 0 {
+            for obs in obstacles {
+                let obsX = Float(obs.lane) * GameWorld.laneOffset
+                let dx = abs(heroX - obsX)
+                let dz = abs(0 - obs.z)
+                let obsHalfW = obs.size.x * 0.5
+                let obsHalfD = obs.size.z * 0.5
+                let obsMaxY = obs.size.y
+                if dx < (heroHalfW + obsHalfW) * 0.85 &&
+                   dz < (heroHalfD + obsHalfD) * 0.85 &&
+                   heroMinY < obsMaxY - 0.05 &&
+                   heroMaxY > 0 {
+                    triggerGameOver()
+                    break
+                }
             }
         }
     }
 
     private func triggerGameOver() {
         isGameOver = true
-        // Pull the police forward dramatically.
-        policeDistance = 3.5
+        // Pull the police forward dramatically — caught!
+        policeDistance = 4.0
     }
 
     // MARK: - Obstacle generation
 
     private func spawnNextObstacle() {
         // Step the cursor forward by a random gap.
-        let gap = Float.random(in: 6...11, using: &rng)
+        let gap = Float.random(in: 8.5...14, using: &rng)
         spawnCursorZ -= gap
 
         // Decide a configuration. Sometimes spawn a "double" that blocks two
