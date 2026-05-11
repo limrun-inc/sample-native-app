@@ -3,6 +3,7 @@
 //  sample-native-app
 //
 
+import Combine
 import Foundation
 import SwiftUI
 

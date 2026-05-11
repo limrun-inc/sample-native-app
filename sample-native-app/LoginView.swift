@@ -83,7 +83,7 @@ struct LoginView: View {
                         .accessibilityIdentifier("termsFooter")
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 40)
+                .padding(.bottom, 72)
             }
             .animation(.easeInOut(duration: 0.25), value: auth.errorMessage)
         }
