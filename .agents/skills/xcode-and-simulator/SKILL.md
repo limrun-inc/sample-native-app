@@ -32,6 +32,7 @@ lim ios create --xcode \
 ```
 
 In the command output, there will be a signed stream URL. Share that with user so that they can watch the simulator while you are working.
+If you have a browser that user can see, open the signed stream URL in that browser and notify the user.
 
 ### Build
 
