@@ -196,7 +196,6 @@ struct ContentView: View {
                     updatePlayfieldSize(newSize, relocateTarget: true)
                 }
             }
-            .accessibilityIdentifier("playfield")
         }
         .padding(18)
     }
