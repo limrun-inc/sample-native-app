@@ -192,7 +192,7 @@ struct ContentView: View {
                 .onAppear {
                     updatePlayfieldSize(geometry.size, relocateTarget: true)
                 }
-                .onChange(of: geometry.size) { newSize in
+                .onChange(of: geometry.size) { _, newSize in
                     updatePlayfieldSize(newSize, relocateTarget: true)
                 }
             }
