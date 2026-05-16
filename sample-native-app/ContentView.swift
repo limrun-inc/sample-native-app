@@ -182,18 +182,18 @@ struct ContentView: View {
                     Circle()
                         .fill(circleColor.gradient)
                         .frame(width: circleDiameter, height: circleDiameter)
-                        .position(circleCenter)
-                        .shadow(color: circleColor.opacity(0.45), radius: 24, y: 12)
                         .overlay {
                             Circle()
                                 .stroke(.white.opacity(0.62), lineWidth: 3)
                         }
+                        .shadow(color: circleColor.opacity(0.45), radius: 24, y: 12)
                         .opacity(circleCenter == .zero ? 0 : 1)
                         .contentShape(Circle())
                         .onTapGesture(perform: circleTapped)
                         .accessibilityLabel("Target circle")
                         .accessibilityIdentifier("targetCircle")
                         .accessibilityAddTraits(.isButton)
+                        .position(circleCenter)
                 }
                 .onAppear {
                     preparePlayArea(proxy.size)
