@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build and Preview
-        uses: limrun-inc/preview-action@main
+        uses: limrun-inc/preview-action@f4c65009c4f613b589c70466340bfa00e92ef113
         with:
           api-key: ${{ secrets.LIM_API_KEY }}
           project-path: .
