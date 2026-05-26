@@ -36,19 +36,16 @@ lim session <subcommand> --help # flags and examples for one session subcommand
 
 ## Build and Reload
 
-First, create an XCode & iOS Simulator pair:
+Start by building on an iOS simulator-backed Xcode target:
 
 ```bash
-# Add label selector depending on your identifiers. For example, Linear issue, repo name etc.
-lim ios create --xcode \
-  --reuse-if-exists \
-  --label issue=<ISSUE ID> \
-  --label repo=<Repo Name> \
-  --label agent=<Your Agent Name>
-# Example call: lim xcode create --reuse-if-exists --label issue=LIM-34 --label repo=sample-native-app --label agent=cursor
+lim xcode build . --ios
 ```
 
+The CLI reuses an existing iOS simulator-backed Xcode target when one is available, or creates one lazily. Do not create an iOS or Xcode instance before the first build unless the user explicitly asks you to target a specific instance.
+
 In the command output, there will be a signed stream URL. Share that with user so that they can watch the simulator while you are working.
+When you share it, format it as a Markdown link such as `[Live simulator](<signed-stream-url>)` so line wrapping does not break the URL.
 If you have a browser that user can see, open the signed stream URL in that browser and notify the user.
 
 ### Build
@@ -56,7 +53,7 @@ If you have a browser that user can see, open the signed stream URL in that brow
 Instead of `xcodebuild` command, you MUST use the following to build the iOS app.
 
 ```bash
-lim xcode build .
+lim xcode build . --ios
 ```
 
 Use `--scheme` and `--workspace` flags if the project has multiple schemes or uses a workspace file. This makes sure the files are synced with the remote xcode and triggers
@@ -164,12 +161,11 @@ lim ios record stop -o /tmp/recording.mp4
 
 ## Finalize
 
-When you are done with the changes and present to the user, you should provide a
-preview link to the user so they can test it.
+When you are done with the changes and present to the user, share the signed stream URL from the latest successful `lim xcode build . --ios` output as a Markdown link so the user can see the live simulator.
 
-If you will open a PR, make sure to do this and add the preview link to PR.
+Only create a reusable preview asset when the user asks for a preview build or when you are opening a PR.
 
-First build and make remote xcode upload the build:
+For a reusable preview build, make remote Xcode upload the build:
 
 ```
 ASSET_NAME="<bundle id/pr number/ or any session identifier>.zip"
@@ -185,7 +181,7 @@ And construct this link for preview:
 https://console.limrun.com/preview?asset=${ASSET_NAME}&platform=ios
 ```
 
-Always provide this in your last message.
+If you create a reusable preview build, include the preview link in your last message. Otherwise, provide the signed stream URL.
 
 ## Cleanup
 
