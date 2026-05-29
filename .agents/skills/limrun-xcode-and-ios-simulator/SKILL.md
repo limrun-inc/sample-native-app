@@ -16,10 +16,10 @@ use local Xcode, local simulators, or local macOS build tools.
 If `lim` CLI is not installed, you can install it with the following:
 
 ```bash
-npm install --global @limrun/cli
+npm install --global lim
 ```
 
-Usage of `lim` CLI requires `LIM_API_KEY`. It must either be found in .env files or available as environment variable.
+Usage of `lim` CLI requires authentication. The user may already be authenticated with `lim login`, which stores credentials outside the project; do not ask for `LIM_API_KEY` just because it is missing from `.env` or the shell environment. If an authenticated command fails with an auth error, ask the user to run `lim login` or provide `LIM_API_KEY`.
 
 ## Check the CLI for current commands and flags
 
@@ -36,24 +36,34 @@ lim session <subcommand> --help # flags and examples for one session subcommand
 
 ## Build and Reload
 
-Start by building on an iOS simulator-backed Xcode target:
+Start with a build-only XCode target. Do not create a simulator until the user needs simulator interaction such as launching the app, tapping UI, reading the element tree, taking screenshots, or recording video.
 
 ```bash
-lim xcode build . --ios
+lim xcode build .
 ```
 
-The CLI reuses an existing iOS simulator-backed Xcode target when one is available, or creates one lazily. Do not create an iOS or Xcode instance before the first build unless the user explicitly asks you to target a specific instance.
+This creates or reuses the remembered XCode target, syncs the current directory, and streams the build logs through stdout and stderr.
 
-In the command output, there will be a signed stream URL. Share that with user so that they can watch the simulator while you are working.
-When you share it, format it as a Markdown link such as `[Live simulator](<signed-stream-url>)` so line wrapping does not break the URL.
-If you have a browser that user can see, open the signed stream URL in that browser and notify the user.
+If the user needs simulator interaction, inspect whether the current XCode target already has a simulator attached:
+
+```bash
+lim xcode get
+```
+
+If the output says a simulator is attached, continue using the current target. If it says no simulator is attached, create a simulator and attach it to the current XCode target:
+
+```bash
+lim ios create --attach
+```
+
+This attaches the new simulator to the remembered XCode target. If the create output includes a signed stream URL, share it with the user as a Markdown link, such as [Live simulator](<signed-stream-url>). If you have a browser that user can see, open the signed stream URL in that browser and notify the user.
 
 ### Build
 
 Instead of `xcodebuild` command, you MUST use the following to build the iOS app.
 
 ```bash
-lim xcode build . --ios
+lim xcode build .
 ```
 
 Use `--scheme` and `--workspace` flags if the project has multiple schemes or uses a workspace file. This makes sure the files are synced with the remote xcode and triggers
@@ -83,9 +93,11 @@ If the app launches without using the expected URL, open the same URL explicitly
 lim ios open-url --id <ios-instance-id> '<absolute-url>'
 ```
 
-Every successful build will automatically re-install the app in iOS Simulator and re-launch it.
+When a simulator is attached, every successful build will automatically re-install the app in iOS Simulator and re-launch it.
 
 ## Interacting with the App
+
+Before running iOS interaction commands, make sure a simulator exists and is attached by following the simulator check in Build and Reload.
 
 Prefer tapping by accessibility identifier, then by label, then by coordinates as a last resort:
 
@@ -105,7 +117,7 @@ lim ios type "hello world"
 
 ## Testing Changes
 
-After every build, test new or changed functionality by using interaction commands. Focus on what changed plus a quick smoke test of core flows.
+When simulator interaction is part of the task, test new or changed functionality by using interaction commands after builds. Focus on what changed plus a quick smoke test of core flows.
 
 Use element tree for functional assertions (element existence, labels, state changes). Use screenshots only for visual-only properties.
 Use video recording for most accurate interaction tests such as animations, gameplay,
@@ -145,7 +157,7 @@ Use `lim ios perform --help` for more details on how to use it.
 Video recording is available so you can review what the user sees while you are taking actions. For
 any testing involving motion prefer video over screenshots for review.
 
-Always include a demo video in the pull request so that user can see how it works.
+For UI changes, include a demo video in the pull request so that user can see how it works.
 
 Start recording (non-blocking):
 
@@ -161,11 +173,11 @@ lim ios record stop -o /tmp/recording.mp4
 
 ## Finalize
 
-When you are done with the changes and present to the user, share the signed stream URL from the latest successful `lim xcode build . --ios` output as a Markdown link so the user can see the live simulator.
-
 Only create a reusable preview asset when the user asks for a preview build or when you are opening a PR.
 
-For a reusable preview build, make remote Xcode upload the build:
+If you will open a PR, make sure to do this and add the preview link to PR.
+
+First build and make remote xcode upload the build:
 
 ```
 ASSET_NAME="<bundle id/pr number/ or any session identifier>.zip"
@@ -181,7 +193,7 @@ And construct this link for preview:
 https://console.limrun.com/preview?asset=${ASSET_NAME}&platform=ios
 ```
 
-If you create a reusable preview build, include the preview link in your last message. Otherwise, provide the signed stream URL.
+If you created a preview asset, provide this link in your last message.
 
 ## Cleanup
 
