@@ -166,6 +166,9 @@ struct PlayingScreen: View {
                         game.circleTapped(in: screenSize)
                     }
                 }
+                .accessibilityElement()
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("Target Circle")
                 .accessibilityIdentifier("targetCircle")
         }
         .onReceive(
