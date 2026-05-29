@@ -164,6 +164,10 @@ struct ContentView: View {
                         .position(circlePosition)
                         .accessibilityLabel("Target circle")
                         .accessibilityIdentifier("targetCircle")
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityAction {
+                            hitCircle(in: geometry.size)
+                        }
                         .onTapGesture {
                             hitCircle(in: geometry.size)
                         }
