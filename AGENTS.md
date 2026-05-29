@@ -10,11 +10,11 @@ test it in the simulator using `lim` CLI.
 
 
 ```bash
-npm install --global @limrun/cli
+npm install --global lim
 ```
 
 ## Cloud specific instructions
 
-- Install `lim` CLI: `npm install --global @limrun/cli`
+- Install `lim` CLI: `npm install --global lim`
 - Always use `lim` CLI to replace xcodebuild and iOS simulator.
 - Refer to `.agents/skills/xcode-and-simulator/SKILL.md` for the full `lim` CLI reference and the sync/build/run workflow.

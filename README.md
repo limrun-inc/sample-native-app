@@ -14,7 +14,7 @@ export LIM_API_KEY=lim_....
 Install `lim` CLI.
 
 ```bash
-npm install --global @limrun/cli
+npm install --global lim
 ```
 
 That's it! Now, make sure to recognize the skills stored in `.agents/skills` folder
