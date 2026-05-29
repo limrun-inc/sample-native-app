@@ -141,11 +141,22 @@ struct ContentView: View {
             .padding(.top, 18)
             .padding(.bottom, 14)
 
-            ProgressView(value: remainingTime, total: selectedInterval)
-                .tint(circleColors[circleColorIndex])
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(.white.opacity(0.12))
+
+                GeometryReader { geometry in
+                    Capsule()
+                        .fill(circleColors[circleColorIndex])
+                        .frame(width: geometry.size.width * progressFraction)
+                }
+            }
+            .frame(height: 8)
                 .padding(.horizontal, 22)
                 .padding(.bottom, 10)
                 .animation(.linear(duration: 0.08), value: remainingTime)
+                .animation(.easeInOut(duration: 0.18), value: circleColorIndex)
+                .accessibilityHidden(true)
 
             GeometryReader { geometry in
                 ZStack {
@@ -242,6 +253,12 @@ struct ContentView: View {
         .padding(.vertical, 12)
         .background(.white.opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private var progressFraction: CGFloat {
+        guard selectedInterval > 0 else { return 0 }
+
+        return CGFloat(min(max(remainingTime / selectedInterval, 0), 1))
     }
 
     private func startGame() {
