@@ -8,17 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject private var auth: AuthState
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        Group {
+            if auth.isSignedIn {
+                SignedInView()
+            } else {
+                LoginView()
+            }
         }
-        .padding()
+        .animation(.easeInOut(duration: 0.25), value: auth.isSignedIn)
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AuthState())
 }
