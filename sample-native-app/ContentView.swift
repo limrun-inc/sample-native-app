@@ -14,6 +14,9 @@ struct ContentView: View {
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Hello, world!")
+            #if LIMRUN
+            Text("LIMRUN preview build")
+            #endif
         }
         .padding()
     }
