@@ -9,9 +9,16 @@ import SwiftUI
 
 @main
 struct sample_native_appApp: App {
+    @StateObject private var connectivity = ConnectivityModel()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(model: connectivity)
+                .onOpenURL { url in
+                    if connectivity.applyConfiguration(url) {
+                        connectivity.checkBothServices()
+                    }
+                }
         }
     }
 }
