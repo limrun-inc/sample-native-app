@@ -17,39 +17,52 @@ enum ServiceCheckState {
 @MainActor
 final class ConnectivityModel: ObservableObject {
     @Published private(set) var internalEndpoint: String
-    @Published private(set) var localEndpoint: String
+    @Published private(set) var intranetEndpoint: String
+    @Published private(set) var egressEndpoint: String
     @Published private(set) var internalState: ServiceCheckState = .idle
-    @Published private(set) var localState: ServiceCheckState = .idle
+    @Published private(set) var intranetState: ServiceCheckState = .idle
+    @Published private(set) var egressState: ServiceCheckState = .idle
 
     private var checkGeneration = 0
     private var internalCheckTask: Task<Void, Never>?
-    private var localCheckTask: Task<Void, Never>?
+    private var intranetCheckTask: Task<Void, Never>?
+    private var egressCheckTask: Task<Void, Never>?
 
     init() {
         internalEndpoint = "http://localhost:4100"
-        localEndpoint = "http://localhost:3000"
+        intranetEndpoint = "http://api.demo.internal:4200"
+        egressEndpoint = "http://ifconfig.me/ip"
     }
 
     var isConfigured: Bool {
-        endpointURL(internalEndpoint) != nil && endpointURL(localEndpoint) != nil
+        endpointURL(internalEndpoint) != nil &&
+            endpointURL(intranetEndpoint) != nil &&
+            endpointURL(egressEndpoint) != nil
     }
 
     var isChecking: Bool {
-        internalState.isLoading || localState.isLoading
+        internalState.isLoading || intranetState.isLoading || egressState.isLoading
     }
 
-    func configure(internalEndpoint: String, localEndpoint: String) -> Bool {
+    func configure(
+        internalEndpoint: String,
+        intranetEndpoint: String,
+        egressEndpoint: String
+    ) -> Bool {
         guard
             let normalizedInternal = normalizedEndpoint(internalEndpoint),
-            let normalizedLocal = normalizedEndpoint(localEndpoint)
+            let normalizedIntranet = normalizedEndpoint(intranetEndpoint),
+            let normalizedEgress = normalizedEndpoint(egressEndpoint)
         else {
             return false
         }
         cancelChecks()
         self.internalEndpoint = normalizedInternal
-        self.localEndpoint = normalizedLocal
+        self.intranetEndpoint = normalizedIntranet
+        self.egressEndpoint = normalizedEgress
         internalState = .idle
-        localState = .idle
+        intranetState = .idle
+        egressState = .idle
         return true
     }
 
@@ -60,33 +73,40 @@ final class ConnectivityModel: ObservableObject {
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
             let internalEndpoint = components.queryItems?
                 .first(where: { $0.name == "internal" })?.value,
-            let localEndpoint = components.queryItems?
-                .first(where: { $0.name == "local" })?.value
+            let intranetEndpoint = components.queryItems?
+                .first(where: { $0.name == "intranet" })?.value,
+            let egressEndpoint = components.queryItems?
+                .first(where: { $0.name == "egress" })?.value
         else {
             return false
         }
         return configure(
             internalEndpoint: internalEndpoint,
-            localEndpoint: localEndpoint
+            intranetEndpoint: intranetEndpoint,
+            egressEndpoint: egressEndpoint
         )
     }
 
-    func checkBothServices() {
+    func checkAllServices() {
         guard
             let internalURL = endpointURL(internalEndpoint),
-            let localURL = endpointURL(localEndpoint)
+            let intranetURL = endpointURL(intranetEndpoint),
+            let egressURL = endpointURL(egressEndpoint)
         else {
-            internalState = .failure("Configure both destinations first.")
-            localState = .failure("Configure both destinations first.")
+            internalState = .failure("Configure all destinations first.")
+            intranetState = .failure("Configure all destinations first.")
+            egressState = .failure("Configure all destinations first.")
             return
         }
 
         let internalWasUnreachable = internalState.isFailure
-        let localWasUnreachable = localState.isFailure
+        let intranetWasUnreachable = intranetState.isFailure
+        let egressWasUnreachable = egressState.isFailure
         cancelChecks()
         let generation = checkGeneration
         internalState = .loading
-        localState = .loading
+        intranetState = .loading
+        egressState = .loading
         internalCheckTask = Task { [weak self] in
             guard let self else {
                 return
@@ -100,27 +120,42 @@ final class ConnectivityModel: ObservableObject {
             }
             internalState = result
         }
-        localCheckTask = Task { [weak self] in
+        intranetCheckTask = Task { [weak self] in
             guard let self else {
                 return
             }
             let result = await check(
-                localURL,
-                recoveredAfterFailure: localWasUnreachable
+                intranetURL,
+                recoveredAfterFailure: intranetWasUnreachable
             )
             guard !Task.isCancelled, generation == checkGeneration else {
                 return
             }
-            localState = result
+            intranetState = result
+        }
+        egressCheckTask = Task { [weak self] in
+            guard let self else {
+                return
+            }
+            let result = await check(
+                egressURL,
+                recoveredAfterFailure: egressWasUnreachable
+            )
+            guard !Task.isCancelled, generation == checkGeneration else {
+                return
+            }
+            egressState = result
         }
     }
 
     private func cancelChecks() {
         checkGeneration += 1
         internalCheckTask?.cancel()
-        localCheckTask?.cancel()
+        intranetCheckTask?.cancel()
+        egressCheckTask?.cancel()
         internalCheckTask = nil
-        localCheckTask = nil
+        intranetCheckTask = nil
+        egressCheckTask = nil
     }
 
     private func endpointURL(_ value: String) -> URL? {
@@ -137,20 +172,28 @@ final class ConnectivityModel: ObservableObject {
             components.password == nil,
             components.query == nil,
             components.fragment == nil,
-            components.path.isEmpty || components.path == "/",
             let host = components.host,
-            isSupportedHost(host),
-            let port = components.port,
-            1...65_535 ~= port
+            isSupportedHost(host)
         else {
             return nil
         }
-        components.path = ""
+        if let port = components.port, !(1...65_535 ~= port) {
+            return nil
+        }
+        if components.path == "/" {
+            components.path = ""
+        }
         return components.url?.absoluteString
     }
 
     private func isSupportedHost(_ host: String) -> Bool {
-        host == "localhost" || IPv4Address(host) != nil || IPv6Address(host) != nil
+        if host == "localhost" || IPv4Address(host) != nil || IPv6Address(host) != nil {
+            return true
+        }
+        let labels = host.split(separator: ".", omittingEmptySubsequences: false)
+        return labels.count > 1 && labels.allSatisfy { label in
+            !label.isEmpty && label.allSatisfy { $0.isLetter || $0.isNumber || $0 == "-" }
+        }
     }
 
     private func check(

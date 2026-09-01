@@ -16,7 +16,7 @@ struct sample_native_appApp: App {
             ContentView(model: connectivity)
                 .onOpenURL { url in
                     if connectivity.applyConfiguration(url) {
-                        connectivity.checkBothServices()
+                        connectivity.checkAllServices()
                     }
                 }
         }

@@ -9,11 +9,14 @@ const definitions = {
       message: 'Customer API reached on this Mac',
     },
   },
-  dev: {
-    port: 3000,
+  // Dialed via a LAN-IP /etc/hosts mapping, so it must accept non-loopback
+  // connections.
+  corp: {
+    port: 4200,
+    allInterfaces: true,
     body: {
-      service: 'dev-server',
-      message: 'Local dev server reached on this Mac',
+      service: 'internal-api',
+      message: 'Internal-only API reached on this Mac',
     },
   },
 };
@@ -45,13 +48,19 @@ async function start(name) {
     console.log(`${name} is already up`);
     return;
   }
-  const { port, body } = definitions[name];
+  const { port, body, allInterfaces } = definitions[name];
   const serve = handler(name, body);
-  const ipv4 = createServer(serve);
-  const ipv6 = createServer(serve);
-  await listen(ipv4, { port, host: '127.0.0.1' });
-  await listen(ipv6, { port, host: '::1', ipv6Only: true });
-  listeners.set(name, [ipv4, ipv6]);
+  if (allInterfaces) {
+    const server = createServer(serve);
+    await listen(server, { port });
+    listeners.set(name, [server]);
+  } else {
+    const ipv4 = createServer(serve);
+    const ipv6 = createServer(serve);
+    await listen(ipv4, { port, host: '127.0.0.1' });
+    await listen(ipv6, { port, host: '::1', ipv6Only: true });
+    listeners.set(name, [ipv4, ipv6]);
+  }
   console.log(`${name} up   http://localhost:${port}`);
 }
 
@@ -86,7 +95,7 @@ async function shutdown() {
 }
 
 await Promise.all(Object.keys(definitions).map(start));
-console.log('\nCommands: api down | api up | dev down | dev up | status | quit\n');
+console.log('\nCommands: api down | api up | corp down | corp up | status | quit\n');
 status();
 
 const input = createInterface({ input: process.stdin, output: process.stdout });
@@ -101,7 +110,7 @@ input.on('line', async (line) => {
   } else if (name in definitions && action === 'down') {
     await stop(name);
   } else {
-    console.log('Use: api down | api up | dev down | dev up | status | quit');
+    console.log('Use: api down | api up | corp down | corp up | status | quit');
   }
 });
 

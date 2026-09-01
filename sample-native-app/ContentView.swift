@@ -12,6 +12,7 @@ private enum DemoPalette {
     static let paper = Color(red: 0.96, green: 0.97, blue: 0.99)
     static let mist = Color(red: 0.88, green: 0.91, blue: 0.96)
     static let internalRoute = Color(red: 0.31, green: 0.35, blue: 0.95)
+    static let intranetRoute = Color(red: 0.55, green: 0.27, blue: 0.85)
     static let localRoute = Color(red: 0.96, green: 0.42, blue: 0.20)
     static let success = Color(red: 0.12, green: 0.64, blue: 0.42)
 }
@@ -37,14 +38,21 @@ struct ContentView: View {
                     )
 
                     ServiceCard(
-                        title: "Local dev server",
-                        endpoint: model.localEndpoint,
+                        title: "Internal-only API",
+                        endpoint: model.intranetEndpoint,
+                        accent: DemoPalette.intranetRoute,
+                        state: model.intranetState
+                    )
+
+                    ServiceCard(
+                        title: "Public egress IP",
+                        endpoint: model.egressEndpoint,
                         accent: DemoPalette.localRoute,
-                        state: model.localState
+                        state: model.egressState
                     )
 
                     Label(
-                        "Only ports 4100 and 3000 are declared.",
+                        "Only the three destinations above are declared.",
                         systemImage: "checkmark.shield"
                     )
                     .font(.footnote)
@@ -80,7 +88,7 @@ struct ContentView: View {
                     return
                 }
                 checkedInitialConfiguration = true
-                model.checkBothServices()
+                model.checkAllServices()
             }
         }
     }
@@ -102,7 +110,7 @@ struct ContentView: View {
                 .foregroundStyle(DemoPalette.ink)
                 .minimumScaleFactor(0.8)
 
-            Text("The app keeps its localhost URLs. Limrun carries only ports 4100 and 3000 back to this Mac.")
+            Text("The app keeps its URLs: a localhost port, an internal-only hostname, and ifconfig.me. Limrun carries all three back to this Mac.")
                 .font(.body)
                 .foregroundStyle(.secondary)
         }
@@ -110,7 +118,7 @@ struct ContentView: View {
 
     private var checkButton: some View {
         Button {
-            model.checkBothServices()
+            model.checkAllServices()
         } label: {
             Label(
                 model.isChecking ? "Checking live routes…" : "Run live check",
@@ -205,22 +213,22 @@ struct ContentView: View {
             return ("Waiting for route configuration", "lock.open", .orange)
         }
 
-        let states = [model.internalState, model.localState]
+        let states = [model.internalState, model.intranetState, model.egressState]
         let failures = states.filter(\.isFailure).count
         if failures > 0 {
             return (
-                "\(failures) of 2 localhost routes unreachable",
+                "\(failures) of 3 destinations unreachable",
                 "exclamationmark.triangle.fill",
                 .red
             )
         }
         if states.contains(where: \.isLoading) {
-            return ("Checking both localhost routes", "arrow.trianglehead.2.clockwise", DemoPalette.internalRoute)
+            return ("Checking both destinations", "arrow.trianglehead.2.clockwise", DemoPalette.internalRoute)
         }
         if states.allSatisfy(\.isSuccess) {
-            return ("2 localhost routes reachable", "checkmark.shield.fill", DemoPalette.success)
+            return ("3 destinations reachable", "checkmark.shield.fill", DemoPalette.success)
         }
-        return ("2 localhost routes ready to check", "point.3.connected.trianglepath.dotted", DemoPalette.internalRoute)
+        return ("3 destinations ready to check", "point.3.connected.trianglepath.dotted", DemoPalette.internalRoute)
     }
 }
 
@@ -268,10 +276,12 @@ private struct ServiceCard: View {
     }
 
     private var endpointLabel: String {
-        guard let url = URL(string: endpoint), let host = url.host, let port = url.port else {
+        guard let url = URL(string: endpoint), let host = url.host else {
             return "not configured"
         }
-        return "\(host):\(port)"
+        let port = url.port.map { ":\($0)" } ?? ""
+        let path = url.path == "/" ? "" : url.path
+        return "\(host)\(port)\(path)"
     }
 
     @ViewBuilder
@@ -379,7 +389,8 @@ private struct ConfigurationView: View {
     @ObservedObject var model: ConnectivityModel
     @Environment(\.dismiss) private var dismiss
     @State private var internalEndpoint = ""
-    @State private var localEndpoint = ""
+    @State private var intranetEndpoint = ""
+    @State private var egressEndpoint = ""
     @State private var showsValidationError = false
 
     var body: some View {
@@ -392,15 +403,22 @@ private struct ConfigurationView: View {
                         .accessibilityIdentifier("internal-endpoint")
                 }
 
-                Section("Local dev server destination") {
-                    TextField("http://localhost:3000", text: $localEndpoint)
+                Section("Internal-only API destination") {
+                    TextField("http://api.demo.internal:4200", text: $intranetEndpoint)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.URL)
-                        .accessibilityIdentifier("local-endpoint")
+                        .accessibilityIdentifier("intranet-endpoint")
+                }
+
+                Section("Egress IP destination") {
+                    TextField("http://ifconfig.me/ip", text: $egressEndpoint)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                        .accessibilityIdentifier("egress-endpoint")
                 }
 
                 if showsValidationError {
-                    Text("Enter localhost or literal-IP HTTP URLs with ports.")
+                    Text("Enter HTTP URLs with a localhost, IP, or domain host.")
                         .foregroundStyle(.red)
                 }
 
@@ -421,10 +439,11 @@ private struct ConfigurationView: View {
                     Button("Save") {
                         if model.configure(
                             internalEndpoint: internalEndpoint,
-                            localEndpoint: localEndpoint
+                            intranetEndpoint: intranetEndpoint,
+                            egressEndpoint: egressEndpoint
                         ) {
                             dismiss()
-                            model.checkBothServices()
+                            model.checkAllServices()
                         } else {
                             showsValidationError = true
                         }
@@ -433,7 +452,8 @@ private struct ConfigurationView: View {
             }
             .onAppear {
                 internalEndpoint = model.internalEndpoint
-                localEndpoint = model.localEndpoint
+                intranetEndpoint = model.intranetEndpoint
+                egressEndpoint = model.egressEndpoint
             }
         }
     }
