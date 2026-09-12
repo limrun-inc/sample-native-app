@@ -54,3 +54,28 @@ Now you can use it in your iOS instances!
 ```bash
 lim run ios --install-asset=sample-native-app.app.tar.gz
 ```
+
+## XCTest launch validation
+
+The `xctest` project builds the sample app and a UI test target. Its tests check
+runner arguments and environment, UI app arguments and environment, and both
+text and screenshot attachments. No hosted unit-test target is needed.
+
+Build the products on remote Xcode:
+
+```bash
+lim xcode create --hard-timeout 30m
+lim xcode run -- 'cd xctest && xcodegen generate && xcodebuild build-for-testing -project SampleNativeValidation.xcodeproj -scheme SampleNativeValidation -destination "generic/platform=iOS Simulator" -derivedDataPath build CODE_SIGNING_ALLOWED=NO'
+lim xcode run --no-sync -- 'python3 xctest/configure-products.py xctest/build/Build/Products'
+```
+
+`configure-products.py` creates two enabled configurations with distinct UI app
+environments. It uses the documented `.xctestrun` keys so the same built bundles
+exercise both configurations. Pass the products tree to limulator's
+`POST /xctest/run` endpoint. A complete run reports four passes: both test methods
+in both configurations. The limrun repository's Limulator Integration workflow
+accepts this repository's commit as `sample-native-ref` and handles the remote
+build, product sync, test run, and sandbox cleanup.
+
+The sample's usual screen stays unchanged unless launched with
+`--limrun-app-value`; that argument makes the received values visible to XCTest.
