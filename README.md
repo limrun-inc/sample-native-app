@@ -54,3 +54,11 @@ Now you can use it in your iOS instances!
 ```bash
 lim run ios --install-asset=sample-native-app.app.tar.gz
 ```
+
+## Run the UI test
+
+```bash
+lim xcode test . --scheme sample-native-app
+```
+
+The test launches the app and checks that "Hello, world!" appears.
