@@ -1,5 +1,2 @@
 .env
 build/
-# Generated XCTest validation products.
-xctest/*.xcodeproj/
-xctest/build/

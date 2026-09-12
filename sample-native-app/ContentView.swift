@@ -16,11 +16,6 @@ struct ContentView: View {
                 .frame(width: 240, height: 240)
                 .accessibilityLabel("Mountains and sun")
             Text("Hello, world!")
-            if let flag = ProcessInfo.processInfo.arguments.firstIndex(of: "--limrun-app-value"),
-               ProcessInfo.processInfo.arguments.indices.contains(flag + 1) {
-                Text("Launch argument: \(ProcessInfo.processInfo.arguments[flag + 1])")
-                Text("Launch environment: \(ProcessInfo.processInfo.environment["LIMRUN_APP_VALUE"] ?? "missing")")
-            }
         }
         .padding()
     }

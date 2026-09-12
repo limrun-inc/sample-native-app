@@ -6,14 +6,38 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXTargetDependency section */
+		A10000000000000000000009 = {
+			isa = PBXTargetDependency;
+			target = 8A0C3A6D2F1A57C100ADB008 /* sample-native-app */;
+			targetProxy = A10000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		A10000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8A0C3A662F1A57C100ADB008 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8A0C3A6D2F1A57C100ADB008;
+			remoteInfo = "sample-native-app";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		8A0C3A6E2F1A57C100ADB008 /* sample-native-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "sample-native-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000002 /* sample-native-appUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "sample-native-appUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8A0C3A702F1A57C100ADB008 /* sample-native-app */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "sample-native-app";
+			sourceTree = "<group>";
+		};
+		A10000000000000000000003 /* sample-native-appUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "sample-native-appUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -26,6 +50,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000000000000000000004 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -33,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				8A0C3A702F1A57C100ADB008 /* sample-native-app */,
+				A10000000000000000000003 /* sample-native-appUITests */,
 				8A0C3A6F2F1A57C100ADB008 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +72,7 @@
 			isa = PBXGroup;
 			children = (
 				8A0C3A6E2F1A57C100ADB008 /* sample-native-app.app */,
+				A10000000000000000000002 /* sample-native-appUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +102,22 @@
 			productReference = 8A0C3A6E2F1A57C100ADB008 /* sample-native-app.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A10000000000000000000007 /* sample-native-appUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000000000000000000008;
+			buildPhases = (
+				A10000000000000000000006 /* Sources */,
+				A10000000000000000000004 /* Frameworks */,
+				A10000000000000000000005 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (A10000000000000000000009,);
+			fileSystemSynchronizedGroups = (A10000000000000000000003,);
+			name = "sample-native-appUITests";
+			productName = "sample-native-appUITests";
+			productReference = A10000000000000000000002 /* sample-native-appUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -80,6 +128,9 @@
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					A10000000000000000000007 = {
+						TestTargetID = 8A0C3A6D2F1A57C100ADB008;
+					};
 					8A0C3A6D2F1A57C100ADB008 = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -100,6 +151,7 @@
 			projectRoot = "";
 			targets = (
 				8A0C3A6D2F1A57C100ADB008 /* sample-native-app */,
+				A10000000000000000000007 /* sample-native-appUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -112,6 +164,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000000000000000000005 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -120,6 +178,12 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000006 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
@@ -312,6 +376,32 @@
 			};
 			name = Release;
 		};
+		A1000000000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.limrun.sample-native.uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "sample-native-app";
+			};
+			name = Debug;
+		};
+		A1000000000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.limrun.sample-native.uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "sample-native-app";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -329,6 +419,15 @@
 			buildConfigurations = (
 				8A0C3A7A2F1A57C300ADB008 /* Debug */,
 				8A0C3A7B2F1A57C300ADB008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000008 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000000000000000000000A /* Debug */,
+				A1000000000000000000000B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
