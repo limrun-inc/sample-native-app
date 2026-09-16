@@ -150,9 +150,13 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
     func roll() {
         guard state.phase == .running, !isRolling else { return }
         isRolling = true
-        let shrink = SCNAction.scaleY(to: 0.5, duration: 0.1)
+        let shrink = SCNAction.customAction(duration: 0.1) { node, t in
+            node.scale.y = Float(1.0 - 0.5 * min(t / 0.1, 1.0))
+        }
         let hold = SCNAction.wait(duration: 0.4)
-        let restore = SCNAction.scaleY(to: 1.0, duration: 0.1)
+        let restore = SCNAction.customAction(duration: 0.1) { node, t in
+            node.scale.y = Float(0.5 + 0.5 * min(t / 0.1, 1.0))
+        }
         playerNode.runAction(.sequence([shrink, hold, restore, .run { [weak self] _ in
             self?.isRolling = false
         }]))
@@ -178,7 +182,8 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
         guard (0...2).contains(next) else { return }
         targetLane = next
         isLaneMoving = true
-        let move = SCNAction.moveTo(x: CGFloat(laneXs[next]), duration: 0.15)
+        let dx = laneXs[next] - playerNode.position.x
+        let move = SCNAction.moveBy(x: CGFloat(dx), y: 0, z: 0, duration: 0.15)
         playerNode.runAction(move) { [weak self] in
             self?.isLaneMoving = false
         }
@@ -221,14 +226,16 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
             for i in 0..<count {
                 let coinGeo = SCNCylinder(radius: 0.3, height: 0.08)
                 coinGeo.firstMaterial?.diffuse.contents = UIColor(red: 1, green: 0.84, blue: 0, alpha: 1)
-                let coin = SCNNode(geometry: coinGeo)
-                coin.name = "coin"
-                coin.eulerAngles = SCNVector3(Float.pi / 2, 0, 0)
-                coin.position = SCNVector3(laneXs[coinLane], 1.0, z - Float(i) * 1.5)
-                let spin = SCNAction.repeatForever(.rotateBy(x: 0, y: 0, z: .pi * 2, duration: 1.2))
-                coin.runAction(spin)
-                scene.rootNode.addChildNode(coin)
-                entities.append(coin)
+                let disc = SCNNode(geometry: coinGeo)
+                disc.eulerAngles = SCNVector3(Float.pi / 2, 0, 0)
+                let pivot = SCNNode()
+                pivot.name = "coin"
+                pivot.position = SCNVector3(laneXs[coinLane], 1.0, z - Float(i) * 1.5)
+                pivot.addChildNode(disc)
+                let spin = SCNAction.repeatForever(.rotateBy(x: 0, y: .pi * 2, z: 0, duration: 1.2))
+                pivot.runAction(spin)
+                scene.rootNode.addChildNode(pivot)
+                entities.append(pivot)
             }
         }
     }
@@ -300,7 +307,14 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
         for e in entities {
             guard e.parent != nil else { continue }
             let p = e.position
-            guard abs(p.z) < 1.2, abs(p.x - playerX) < 0.8 else { continue }
+            let halfLength: Float
+            switch e.name {
+            case "train": halfLength = 4.0 + 0.5
+            case "low", "high": halfLength = 0.2 + 0.5
+            case "coin": halfLength = 0.6
+            default: halfLength = 0.5
+            }
+            guard abs(p.z) < halfLength, abs(p.x - playerX) < 0.8 else { continue }
             switch e.name {
             case "coin":
                 e.removeFromParentNode()

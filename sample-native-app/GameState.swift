@@ -3,6 +3,7 @@
 //  sample-native-app
 //
 
+import Combine
 import Foundation
 
 final class GameState: ObservableObject {
