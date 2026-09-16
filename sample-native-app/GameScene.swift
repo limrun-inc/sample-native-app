@@ -11,6 +11,7 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
     let state: GameState
 
     private let worldNode = SCNNode()
+    private var player: PlayerCharacter!
     private var playerNode: SCNNode!
     private var tiles: [SCNNode] = []
     private var buildings: [SCNNode] = []
@@ -100,11 +101,10 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
             buildings.append(b)
         }
 
-        // Player capsule
-        let capsule = SCNCapsule(capRadius: 0.35, height: 1.4)
-        capsule.firstMaterial?.diffuse.contents = UIColor.orange
-        playerNode = SCNNode(geometry: capsule)
-        playerNode.position = SCNVector3(laneXs[targetLane], 0.9, 0)
+        // Player character
+        player = PlayerCharacter()
+        playerNode = player.node
+        playerNode.position = SCNVector3(laneXs[targetLane], 0, 0)
         scene.rootNode.addChildNode(playerNode)
     }
 
@@ -122,9 +122,9 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
         distanceCounter = 0
         lastTime = 0
         playerNode.removeAllActions()
-        playerNode.position = SCNVector3(laneXs[1], 0.9, 0)
-        playerNode.scale = SCNVector3(1, 1, 1)
-        playerNode.geometry?.firstMaterial?.diffuse.contents = UIColor.orange
+        playerNode.position = SCNVector3(laneXs[1], 0, 0)
+        player.reset()
+        player.setTint(nil)
         DispatchQueue.main.async {
             self.state.score = 0
             self.state.coins = 0
@@ -150,14 +150,8 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
     func roll() {
         guard state.phase == .running, !isRolling else { return }
         isRolling = true
-        let shrink = SCNAction.customAction(duration: 0.1) { node, t in
-            node.scale.y = Float(1.0 - 0.5 * min(t / 0.1, 1.0))
-        }
-        let hold = SCNAction.wait(duration: 0.4)
-        let restore = SCNAction.customAction(duration: 0.1) { node, t in
-            node.scale.y = Float(0.5 + 0.5 * min(t / 0.1, 1.0))
-        }
-        playerNode.runAction(.sequence([shrink, hold, restore, .run { [weak self] _ in
+        player.startRoll()
+        playerNode.runAction(.sequence([.wait(duration: 0.6), .run { [weak self] _ in
             self?.isRolling = false
         }]))
     }
@@ -168,8 +162,7 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
         isJumping = false
         isRolling = false
         isLaneMoving = false
-        playerNode.scale = SCNVector3(1, 1, 1)
-        playerNode.geometry?.firstMaterial?.diffuse.contents = UIColor.gray
+        player.setTint(.gray)
         DispatchQueue.main.async {
             self.state.phase = .gameOver
             self.state.updateBest()
@@ -243,6 +236,13 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
     // MARK: - Renderer delegate
 
     func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+        let animPhase: PlayerCharacter.Phase
+        if state.phase == .gameOver { animPhase = .dead }
+        else if isRolling { animPhase = .rolling }
+        else if isJumping { animPhase = .jumping }
+        else if state.phase == .running { animPhase = .running }
+        else { animPhase = .idle }
+        player.update(time: time, speed: speed, phase: animPhase)
         guard state.phase == .running else {
             lastTime = time
             return
@@ -326,7 +326,7 @@ final class GameController: NSObject, SCNSceneRendererDelegate {
                 gameOver()
                 return
             case "low":
-                if playerY <= 1.6 {
+                if playerY <= 0.7 {
                     gameOver()
                     return
                 }
