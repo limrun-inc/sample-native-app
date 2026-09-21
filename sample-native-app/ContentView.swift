@@ -41,6 +41,7 @@ struct ContentView: View {
     @State private var circlePosition = CGPoint(x: 180, y: 360)
     @State private var circleSize = Constants.startCircleSize
     @State private var circleColor = Color.pink
+    @State private var hingeDegrees: Double?
 
     private let timer = Timer.publish(every: 0.02, on: .main, in: .common).autoconnect()
 
@@ -62,6 +63,17 @@ struct ContentView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background {
+                DuoHingeObserver { hingeDegrees = $0 }
+            }
+            .onChange(of: proxy.size) { _, newSize in
+                guard phase == .playing else { return }
+                circlePosition = safeCirclePosition(circlePosition, in: newSize, diameter: circleSize)
+            }
+            .onChange(of: hingeDegrees) { _, _ in
+                guard phase == .playing else { return }
+                circlePosition = safeCirclePosition(circlePosition, in: proxy.size, diameter: circleSize)
+            }
             .onReceive(timer) { now in
                 guard phase == .playing else { return }
 
@@ -88,26 +100,60 @@ struct ContentView: View {
         .ignoresSafeArea()
     }
 
+    @ViewBuilder
     private func startScreen(in size: CGSize) -> some View {
-        VStack(spacing: 28) {
-            VStack(spacing: 12) {
-                Image(systemName: "circle.circle.fill")
-                    .font(.system(size: 72, weight: .semibold))
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(.pink, .white.opacity(0.35))
-                    .shadow(color: .pink.opacity(0.45), radius: 28)
+        if usesExpandedLayout(size) {
+            HStack(spacing: 84) {
+                startHero
+                    .frame(maxWidth: .infinity)
 
-                Text("Speedy Circles")
-                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                    .foregroundStyle(.white)
-
-                Text("Tap each circle before the countdown ends. Every hit makes the target smaller and faster to track.")
-                    .font(.body)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.white.opacity(0.72))
-                    .lineSpacing(3)
+                startControls(in: size)
+                    .frame(maxWidth: .infinity)
             }
+            .padding(.horizontal, 64)
+            .frame(maxWidth: 980)
+        } else {
+            VStack(spacing: 28) {
+                startHero
+                startControls(in: size)
+            }
+            .padding(28)
+            .frame(maxWidth: 430)
+        }
+    }
 
+    private var startHero: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "circle.circle.fill")
+                .font(.system(size: 72, weight: .semibold))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.pink, .white.opacity(0.35))
+                .shadow(color: .pink.opacity(0.45), radius: 28)
+
+            Text("Speedy Circles")
+                .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                .foregroundStyle(.white)
+
+            Text("Tap each circle before the countdown ends. Every hit makes the target smaller and faster to track.")
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.white.opacity(0.72))
+                .lineSpacing(3)
+
+            if let hingeDegrees {
+                Label(hingeLabel(for: hingeDegrees), systemImage: "rectangle.split.2x1")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.76))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(.white.opacity(0.1), in: Capsule())
+                    .accessibilityLabel("Duo hinge \(Int(hingeDegrees.rounded())) degrees")
+            }
+        }
+    }
+
+    private func startControls(in size: CGSize) -> some View {
+        VStack(spacing: 28) {
             VStack(alignment: .leading, spacing: 14) {
                 Text("Round timer")
                     .font(.headline)
@@ -139,7 +185,6 @@ struct ContentView: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("startButton")
         }
-        .padding(28)
         .frame(maxWidth: 430)
     }
 
@@ -173,10 +218,10 @@ struct ContentView: View {
     private func gameScreen(in size: CGSize) -> some View {
         ZStack {
             VStack {
-                gameHeader
+                gameHeader(in: size)
                 Spacer()
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, usesExpandedLayout(size) ? 48 : 20)
             .padding(.top, 18)
 
             Circle()
@@ -203,8 +248,8 @@ struct ContentView: View {
         }
     }
 
-    private var gameHeader: some View {
-        HStack(spacing: 12) {
+    private func gameHeader(in size: CGSize) -> some View {
+        HStack(spacing: usesExpandedLayout(size) ? 84 : 12) {
             statCard(title: "Score", value: "\(score)", icon: "star.fill")
 
             statCard(
@@ -227,6 +272,7 @@ struct ContentView: View {
                 .padding(.bottom, 10)
             }
         }
+        .frame(maxWidth: usesExpandedLayout(size) ? 980 : nil)
     }
 
     private func statCard(title: String, value: String, icon: String) -> some View {
@@ -362,13 +408,59 @@ struct ContentView: View {
 
     private func randomCirclePosition(in size: CGSize, diameter: CGFloat) -> CGPoint {
         let radius = diameter / 2
-        let xRange = (radius + 24)...max(radius + 24, size.width - radius - 24)
+        let horizontalInset = radius + 24
         let yRange = (radius + 132)...max(radius + 132, size.height - radius - 48)
 
+        let x: CGFloat
+        if usesExpandedLayout(size) {
+            let midpoint = size.width / 2
+            let hingeClearance = radius + 34
+            let leftRange = horizontalInset...max(horizontalInset, midpoint - hingeClearance)
+            let rightStart = min(size.width - horizontalInset, midpoint + hingeClearance)
+            let rightRange = rightStart...max(rightStart, size.width - horizontalInset)
+            x = Bool.random() ? CGFloat.random(in: leftRange) : CGFloat.random(in: rightRange)
+        } else {
+            let xRange = horizontalInset...max(horizontalInset, size.width - horizontalInset)
+            x = CGFloat.random(in: xRange)
+        }
+
         return CGPoint(
-            x: CGFloat.random(in: xRange),
+            x: x,
             y: CGFloat.random(in: yRange)
         )
+    }
+
+    private func safeCirclePosition(_ position: CGPoint, in size: CGSize, diameter: CGFloat) -> CGPoint {
+        let radius = diameter / 2
+        let horizontalInset = radius + 24
+        let minimumY = radius + 132
+        let maximumY = max(minimumY, size.height - radius - 48)
+        var x = min(max(position.x, horizontalInset), max(horizontalInset, size.width - horizontalInset))
+
+        if usesExpandedLayout(size) {
+            let midpoint = size.width / 2
+            let hingeClearance = radius + 34
+            if abs(x - midpoint) < hingeClearance {
+                x = x < midpoint ? midpoint - hingeClearance : midpoint + hingeClearance
+            }
+        }
+
+        return CGPoint(x: x, y: min(max(position.y, minimumY), maximumY))
+    }
+
+    private func usesExpandedLayout(_ size: CGSize) -> Bool {
+        size.width >= 700
+    }
+
+    private func hingeLabel(for degrees: Double) -> String {
+        switch degrees {
+        case 175...:
+            "Duo fully open"
+        case 0..<15:
+            "Duo closed"
+        default:
+            "Duo at \(Int(degrees.rounded()))°"
+        }
     }
 
     private func randomCircleColor(excluding color: Color? = nil) -> Color {
