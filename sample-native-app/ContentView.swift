@@ -16,6 +16,9 @@ struct ContentView: View {
                 .frame(width: 240, height: 240)
                 .accessibilityLabel("Mountains and sun")
             Text("Hello, world!")
+            #if LIMRUN
+            Text("LIMRUN preview build")
+            #endif
         }
         .padding()
     }
