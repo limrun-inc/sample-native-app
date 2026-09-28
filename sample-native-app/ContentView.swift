@@ -34,6 +34,7 @@ struct ContentView: View {
             VStack(spacing: 12) {
                 TextField("Your name", text: $name)
                     .focused($nameFocused)
+                    .autocorrectionDisabled()
                     .submitLabel(.done)
                     .onSubmit(greet)
                     .padding(.horizontal, 16)
