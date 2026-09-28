@@ -20,6 +20,27 @@ npm install --global lim
 That's it! Now, make sure to recognize the skills stored in `.agents/skills` folder
 so you know how to use the `lim` CLI to build and test iOS apps.
 
+## Drive the app
+
+The first screen has a name field and a button. Build it, attach a simulator, and drive it:
+
+```bash
+lim xcode build .
+lim ios create --attach
+lim ios set-text "Ada" --ax-unique-id nameField
+lim ios tap-element --ax-unique-id greetButton
+lim ios element-tree --json | grep "Hello, Ada!"
+lim ios app-log com.limrun.sample-native --tail 50 | grep '\[sample\]'
+```
+
+The heading changes to `Hello, Ada!` and the app logs `[sample] greeted Ada`.
+
+| Element | Identifier |
+| --- | --- |
+| Heading | `greeting` |
+| Name field | `nameField` |
+| Say hello button | `greetButton` |
+
 ## Local Builds
 
 If you're on macOS with access to XCode, you can get a simulator build of this
