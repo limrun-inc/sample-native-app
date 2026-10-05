@@ -1,20 +1,48 @@
 import XCTest
 
 final class SampleNativeUITests: XCTestCase {
-    func testGreetingIsVisible() {
+    private func launchCleanApp() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments.append("-resetTodosForUITests")
         app.launch()
-        XCTAssertTrue(app.staticTexts["Hello, world!"].waitForExistence(timeout: 10))
+        return app
     }
 
-    func testGreetsByName() {
-        let app = XCUIApplication()
-        app.launch()
-        let field = app.textFields["nameField"]
-        XCTAssertTrue(field.waitForExistence(timeout: 10))
-        field.tap()
-        field.typeText("Ada")
-        app.buttons["greetButton"].tap()
-        XCTAssertTrue(app.staticTexts["Hello, Ada!"].waitForExistence(timeout: 5))
+    func testAddCompleteFilterAndDeleteTask() {
+        let app = launchCleanApp()
+        XCTAssertTrue(app.staticTexts["A fresh start"].waitForExistence(timeout: 10))
+
+        let input = app.textFields["todoInput"]
+        input.tap()
+        input.typeText("Buy groceries")
+        app.buttons["addTodoButton"].tap()
+
+        XCTAssertTrue(app.staticTexts["Buy groceries"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["1 task on your mind today."].exists)
+
+        app.buttons["Complete Buy groceries"].tap()
+        XCTAssertTrue(app.staticTexts["You're all caught up. Enjoy the moment."].exists)
+
+        app.buttons["filterActive"].tap()
+        XCTAssertTrue(app.staticTexts["Nothing left to do"].exists)
+        app.buttons["filterDone"].tap()
+        XCTAssertTrue(app.staticTexts["Buy groceries"].exists)
+
+        app.buttons["Delete Buy groceries"].tap()
+        XCTAssertTrue(app.staticTexts["No completed tasks yet"].exists)
+    }
+
+    func testTaskPersistsAcrossLaunches() {
+        let app = launchCleanApp()
+        let input = app.textFields["todoInput"]
+        input.tap()
+        input.typeText("Read a book")
+        app.buttons["addTodoButton"].tap()
+        XCTAssertTrue(app.staticTexts["Read a book"].waitForExistence(timeout: 5))
+
+        app.terminate()
+        let reopened = XCUIApplication()
+        reopened.launch()
+        XCTAssertTrue(reopened.staticTexts["Read a book"].waitForExistence(timeout: 10))
     }
 }

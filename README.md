@@ -1,7 +1,8 @@
 # Sample Native App
 
-This is a sample iOS app that your coding agent in Linux can build and test using
-Limrun with remote XCode & iOS simulator.
+This is a simple SwiftUI todo app that your coding agent in Linux can build and test using
+Limrun with remote Xcode & iOS simulator. Add tasks, mark them done, filter by status,
+and delete them. Tasks are stored on-device and survive app restarts.
 
 ## Setup
 
@@ -22,24 +23,25 @@ so you know how to use the `lim` CLI to build and test iOS apps.
 
 ## Drive the app
 
-The first screen has a name field and a button. Build it, attach a simulator, and drive it:
+Build it, attach a simulator, and add a task:
 
 ```bash
 lim xcode build .
 lim ios create --attach
-lim ios set-text "Ada" --ax-unique-id nameField
-lim ios tap-element --ax-unique-id greetButton
-lim ios element-tree --json | grep "Hello, Ada!"
-lim ios app-log com.limrun.sample-native --tail 50 | grep '\[sample\]'
+lim ios set-text "Buy groceries" --ax-unique-id todoInput
+lim ios tap-element --ax-unique-id addTodoButton
+lim ios element-tree --json | rg "Buy groceries"
 ```
 
-The heading changes to `Hello, Ada!` and the app logs `[sample] greeted Ada`.
+The list displays the new task. Tap its circle to complete it, use the All / Active / Done
+filters to browse tasks, or tap its trash button to delete it.
 
 | Element | Identifier |
 | --- | --- |
-| Heading | `greeting` |
-| Name field | `nameField` |
-| Say hello button | `greetButton` |
+| Remaining count | `remainingCount` |
+| Task field | `todoInput` |
+| Add button | `addTodoButton` |
+| Filters | `filterAll`, `filterActive`, `filterDone` |
 
 ## Local Builds
 
@@ -82,4 +84,4 @@ lim run ios --install-asset=sample-native-app.app.tar.gz
 lim xcode test . --scheme sample-native-app
 ```
 
-The test launches the app and checks that "Hello, world!" appears.
+The UI tests cover adding, completing, filtering, deleting, and saving tasks across launches.
