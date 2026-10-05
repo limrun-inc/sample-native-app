@@ -1,85 +1,19 @@
-# Sample Native App
+# Night Runners Club
 
-This is a sample iOS app that your coding agent in Linux can build and test using
-Limrun with remote XCode & iOS simulator.
+A three-lane endless runner for iOS, built with SwiftUI and a procedural 3D Metal scene. No downloaded models or textures are required: the city, subway tracks, character, hazards, and coins are generated from geometry at runtime.
 
-## Setup
+## Play
 
-First, you need to get an API key from [Limrun Console](https://console.limrun.com).
+Tap **Start Running**. Swipe left or right to change lanes, up to jump barriers, and down to slide under overhead gates. Trains must be avoided by switching lanes. Collect gold coins and travel as far as you can. On-screen controls provide the same actions. Pause at any time; after a collision, tap **Run It Back** to retry. Your best distance is saved on the device.
 
-```bash
-export LIM_API_KEY=lim_....
-```
+## Build and test
 
-Install `lim` CLI.
+Use the repository's Limrun CLI workflow (see `.agents/skills/limrun-xcode/SKILL.md` and `.agents/skills/limrun-ios-simulator/SKILL.md`):
 
 ```bash
-npm install --global lim
-```
-
-That's it! Now, make sure to recognize the skills stored in `.agents/skills` folder
-so you know how to use the `lim` CLI to build and test iOS apps.
-
-## Drive the app
-
-The first screen has a name field and a button. Build it, attach a simulator, and drive it:
-
-```bash
-lim xcode build .
+lim xcode build . --scheme sample-native-app
 lim ios create --attach
-lim ios set-text "Ada" --ax-unique-id nameField
-lim ios tap-element --ax-unique-id greetButton
-lim ios element-tree --json | grep "Hello, Ada!"
-lim ios app-log com.limrun.sample-native --tail 50 | grep '\[sample\]'
-```
-
-The heading changes to `Hello, Ada!` and the app logs `[sample] greeted Ada`.
-
-| Element | Identifier |
-| --- | --- |
-| Heading | `greeting` |
-| Name field | `nameField` |
-| Say hello button | `greetButton` |
-
-## Local Builds
-
-If you're on macOS with access to XCode, you can get a simulator build of this
-project and upload to Limrun Asset Storage so that you can get simulators
-with this app pre-installed.
-
-Build with the following command:
-```bash
-xcodebuild -project sample-native-app.xcodeproj \
-  -scheme sample-native-app \
-  -sdk iphonesimulator \
-  -configuration Debug \
-  -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath build \
-  build
-```
-
-Once completed, archive the `.app` folder.
-```bash
-tar -czf sample-native-app.app.tar.gz \
-  -C build/Build/Products/Debug-iphonesimulator \
-  sample-native-app.app
-```
-
-Push to Limrun Asset Storage.
-```bash
-lim push sample-native-app.app.tar.gz
-```
-
-Now you can use it in your iOS instances!
-
-```bash
-lim run ios --install-asset=sample-native-app.app.tar.gz
-```
-
-## Run the UI test
-
-```bash
 lim xcode test . --scheme sample-native-app
 ```
 
-The test launches the app and checks that "Hello, world!" appears.
+Bundle ID: `com.limrun.sample-native`.
