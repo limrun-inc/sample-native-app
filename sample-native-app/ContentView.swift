@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 enum Palette {
@@ -256,7 +257,6 @@ struct ContentView: View {
             .padding(.top, 23)
             .padding(.bottom, 9)
         }
-        .accessibilityIdentifier("readyPanel")
     }
 
     private var runningHint: some View {
@@ -282,7 +282,6 @@ struct ContentView: View {
                 lastFrame = Date()
             }
         }
-        .accessibilityIdentifier("pausePanel")
     }
 
     private var finishedPanel: some View {
@@ -300,7 +299,6 @@ struct ContentView: View {
                 lastFrame = Date()
             }
         }
-        .accessibilityIdentifier("finishedPanel")
     }
 
     private func resultValue(_ title: String, value: String) -> some View {
