@@ -124,7 +124,7 @@ async function start(name) {
     return;
   }
   const { port, hosts, routes } = services[name];
-  const servers = await Promise.all(
+  const results = await Promise.allSettled(
     hosts.map(
       (host) =>
         new Promise((resolve, reject) => {
@@ -134,6 +134,13 @@ async function start(name) {
         }),
     ),
   );
+  const servers = results.filter((result) => result.status === 'fulfilled').map((result) => result.value);
+  const failure = results.find((result) => result.status === 'rejected');
+  if (failure) {
+    // Release the addresses that did bind, so a later `up` can retry.
+    servers.forEach((server) => server.close());
+    throw failure.reason;
+  }
   running.set(name, servers);
   console.log(`${name.padEnd(7)}  up    ${name === 'staging' ? stagingHost : 'localhost'}:${port}`);
 }
@@ -169,14 +176,19 @@ console.log('\nCommands: staging down | staging up | eta down | eta up | quit\n'
 
 createInterface({ input: process.stdin }).on('line', async (line) => {
   const [name, action] = line.trim().toLowerCase().split(/\s+/);
-  if (name === 'quit') {
-    await shutdown();
-  } else if (name in services && action === 'up') {
-    await start(name);
-  } else if (name in services && action === 'down') {
-    await stop(name);
-  } else {
-    console.log('Use: staging down | staging up | eta down | eta up | quit');
+  try {
+    if (name === 'quit') {
+      await shutdown();
+    } else if (name in services && action === 'up') {
+      await start(name);
+    } else if (name in services && action === 'down') {
+      await stop(name);
+    } else {
+      console.log('Use: staging down | staging up | eta down | eta up | quit');
+    }
+  } catch (error) {
+    // A failed command must not take the other service down with it.
+    console.log(`${name} ${action} failed: ${error.message}`);
   }
 });
 

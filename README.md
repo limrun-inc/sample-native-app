@@ -60,7 +60,7 @@ machine inside your network.
    attaches.
 
 3. Open a pull request from this branch. When the **Limrun Preview** comment
-   appears, select **Open Simulator Preview**.
+   appears, select **Open Preview**.
 
    The simulator attaches to the tunnel, launches the app, and opens order
    #1042. The order comes from `api.staging.internal` and its delivery estimate

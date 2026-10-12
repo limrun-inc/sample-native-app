@@ -48,8 +48,13 @@ struct OrdersView: View {
         }
     }
 
+    // A cancelled load (the view went away mid-request) keeps the old state
+    // instead of showing the cancellation as a failure.
     private func load() async {
-        orders = await Loadable { try await api.orders() }
+        let orders = await Loadable { try await api.orders() }
+        if !Task.isCancelled {
+            self.orders = orders
+        }
     }
 }
 
@@ -122,7 +127,10 @@ struct OrderDetailView: View {
     private func load() async {
         async let order = Loadable { try await api.order(id) }
         async let estimate = Loadable { try await api.estimate(for: id) }
-        (self.order, self.estimate) = await (order, estimate)
+        let loaded = await (order, estimate)
+        if !Task.isCancelled {
+            (self.order, self.estimate) = loaded
+        }
     }
 }
 
