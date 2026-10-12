@@ -81,7 +81,7 @@ struct OrderDetailView: View {
                         LabeledContent(item.name, value: "× \(item.quantity)")
                     }
                     LabeledContent("Total") {
-                        Text(order.total, format: .currency(code: "USD"))
+                        Text(order.total.formatted(.dollars))
                             .bold()
                     }
                 }
@@ -143,7 +143,7 @@ private struct OrderRow: View {
                 Text("#\(order.id)")
                     .font(.headline)
                 Spacer()
-                Text(order.total, format: .currency(code: "USD"))
+                Text(order.total.formatted(.dollars))
                     .font(.headline)
                     .monospacedDigit()
             }
@@ -195,5 +195,13 @@ private struct SourceFooter: View {
     var body: some View {
         Label("From \(url.hostAndPort)", systemImage: "point.3.connected.trianglepath.dotted")
             .font(.caption.monospaced())
+    }
+}
+
+extension FormatStyle where Self == Decimal.FormatStyle.Currency {
+    // The orders are priced in dollars, so render them as $18.50 whatever
+    // region the simulator is set to.
+    static var dollars: Self {
+        .currency(code: "USD").locale(Locale(identifier: "en_US"))
     }
 }

@@ -66,8 +66,7 @@ machine inside your network.
    #1042. The order comes from `api.staging.internal` and its delivery estimate
    from `localhost:4100`, and the first terminal prints both requests.
 
-4. Tap **Orders** to go back to the list, which also comes from the staging
-   API.
+4. Tap the back button. The list of orders also comes from the staging API.
 
 5. To show that the services fail independently, enter `eta down` in the first
    terminal, open an order, and pull to refresh. The **Delivery** section
