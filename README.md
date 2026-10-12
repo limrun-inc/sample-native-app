@@ -1,85 +1,100 @@
-# Sample Native App
+# Preview pull requests against services in your network
 
-This is a sample iOS app that your coding agent in Linux can build and test using
-Limrun with remote XCode & iOS simulator.
+This sample shows a pull request preview that reaches services only your network
+can reach. The app lists orders from a staging API at `api.staging.internal`, a
+hostname that resolves only inside your network. Each order also shows a
+delivery estimate from an ETA service on `localhost:4100`, which this pull
+request adds and which runs on your laptop. A
+[persistent tunnel](https://docs.limrun.com/docs/networking/persistent-tunnels)
+named `staging` connects every preview simulator to both services.
 
-## Setup
+`demo/services.mjs` stands in for both services, and this Mac stands in for a
+machine inside your network.
 
-First, you need to get an API key from [Limrun Console](https://console.limrun.com).
+## Before you begin
 
-```bash
-export LIM_API_KEY=lim_....
+- Install `lim` 0.43.0 or later with `npm install --global lim`.
+- Get an admin API key of the organization whose key is in the repository's
+  `LIM_API_KEY` secret. Only admins create tunnels.
+- Install Node.js 18 or later.
+
+## Set up the tunnel once
+
+1. Map the staging hostname to this Mac's LAN IP:
+
+   ```bash
+   echo "$(ipconfig getifaddr en0) api.staging.internal" | sudo tee -a /etc/hosts
+   ```
+
+   Use the LAN IP, not `127.0.0.1`: the tunnel never dials a loopback address
+   for a domain. When your LAN IP changes, for example on another Wi-Fi
+   network, update this line. `demo/services.mjs` refuses to start until the
+   hostname points at this Mac.
+
+2. Create the tunnel:
+
+   ```bash
+   lim tunnel create staging --selector "*.staging.internal" --selector localhost:4100
+   ```
+
+   The command prints the connector command, `lim tunnel run --token <token>`.
+   Save it, because the token is shown only once.
+
+## Run the demo
+
+1. Start the services:
+
+   ```bash
+   node demo/services.mjs
+   ```
+
+   The terminal prints every request the services receive.
+
+2. In a second terminal, start the connector with the command you saved:
+
+   ```bash
+   lim tunnel run --token <token>
+   ```
+
+   It prints `Tunnel staging is active`, then one line for each simulator it
+   attaches.
+
+3. Open a pull request from this branch. When the **Limrun Preview** comment
+   appears, select **Open Simulator Preview**.
+
+   The simulator attaches to the tunnel, launches the app, and opens order
+   #1042. The order comes from `api.staging.internal` and its delivery estimate
+   from `localhost:4100`, and the first terminal prints both requests.
+
+4. Tap **Orders** to go back to the list, which also comes from the staging
+   API.
+
+5. To show that the services fail independently, enter `eta down` in the first
+   terminal, open an order, and pull to refresh. The **Delivery** section
+   reports the failure while the order still loads. Enter `eta up` and refresh
+   again.
+
+## How the workflow configures the preview
+
+`.github/workflows/build.yaml` passes three inputs to the iOS preview action:
+
+```yaml
+tunnel: staging
+env: |
+  API_URL=http://api.staging.internal:4200
+  ETA_URL=http://localhost:4100
+open-url: limrun-demo://orders/1042
 ```
 
-Install `lim` CLI.
+- `tunnel` attaches the preview simulator to the `staging` tunnel before the app
+  launches, so the app's first request already reaches your network.
+- `env` sets the app's launch environment. The build carries no backend URL, so
+  the same build runs against another environment when you change these
+  values. The preview applies them to the launch it performs: if you relaunch
+  the app from the home screen, it starts without them and shows
+  **No backend configured**.
+- `open-url` opens a deep link after the app launches, so reviewers land on the
+  screen the pull request changes.
 
-```bash
-npm install --global lim
-```
-
-That's it! Now, make sure to recognize the skills stored in `.agents/skills` folder
-so you know how to use the `lim` CLI to build and test iOS apps.
-
-## Drive the app
-
-The first screen has a name field and a button. Build it, attach a simulator, and drive it:
-
-```bash
-lim xcode build .
-lim ios create --attach
-lim ios set-text "Ada" --ax-unique-id nameField
-lim ios tap-element --ax-unique-id greetButton
-lim ios element-tree --json | grep "Hello, Ada!"
-lim ios app-log com.limrun.sample-native --tail 50 | grep '\[sample\]'
-```
-
-The heading changes to `Hello, Ada!` and the app logs `[sample] greeted Ada`.
-
-| Element | Identifier |
-| --- | --- |
-| Heading | `greeting` |
-| Name field | `nameField` |
-| Say hello button | `greetButton` |
-
-## Local Builds
-
-If you're on macOS with access to XCode, you can get a simulator build of this
-project and upload to Limrun Asset Storage so that you can get simulators
-with this app pre-installed.
-
-Build with the following command:
-```bash
-xcodebuild -project sample-native-app.xcodeproj \
-  -scheme sample-native-app \
-  -sdk iphonesimulator \
-  -configuration Debug \
-  -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath build \
-  build
-```
-
-Once completed, archive the `.app` folder.
-```bash
-tar -czf sample-native-app.app.tar.gz \
-  -C build/Build/Products/Debug-iphonesimulator \
-  sample-native-app.app
-```
-
-Push to Limrun Asset Storage.
-```bash
-lim push sample-native-app.app.tar.gz
-```
-
-Now you can use it in your iOS instances!
-
-```bash
-lim run ios --install-asset=sample-native-app.app.tar.gz
-```
-
-## Run the UI test
-
-```bash
-lim xcode test . --scheme sample-native-app
-```
-
-The test launches the app and checks that "Hello, world!" appears.
+The preview link in the pull request comment contains these values, so keep
+them nonsecret.
