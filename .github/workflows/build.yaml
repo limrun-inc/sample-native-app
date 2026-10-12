@@ -7,13 +7,17 @@ permissions:
   contents: read
   pull-requests: write
 
+concurrency:
+  group: ios-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build and Preview
-        uses: limrun-inc/preview-action@f4c65009c4f613b589c70466340bfa00e92ef113
+        uses: limrun-inc/ios-preview-action@main
         with:
           api-key: ${{ secrets.LIM_API_KEY }}
           project-path: .
