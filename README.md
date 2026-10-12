@@ -68,10 +68,10 @@ machine inside your network.
 
 4. Tap the back button. The list of orders also comes from the staging API.
 
-5. To show that the services fail independently, enter `eta down` in the first
-   terminal, open an order, and pull to refresh. The **Delivery** section
-   reports the failure while the order still loads. Enter `eta up` and refresh
-   again.
+5. To show that the services fail independently, open an order, enter
+   `eta down` in the first terminal, and tap **Refresh**. The **Delivery**
+   section reports the failure while the order still loads. Enter `eta up` and
+   tap **Refresh** again.
 
 ## How the workflow configures the preview
 

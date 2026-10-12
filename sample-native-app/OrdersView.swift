@@ -44,7 +44,7 @@ struct OrdersView: View {
                 OrderDetailView(api: api, id: id)
             }
             .task { await load() }
-            .refreshable { await load() }
+            .toolbar { RefreshButton(action: load) }
         }
     }
 
@@ -119,7 +119,7 @@ struct OrderDetailView: View {
         }
         .navigationTitle("Order #\(id)")
         .task { await load() }
-        .refreshable { await load() }
+        .toolbar { RefreshButton(action: load) }
     }
 
     // The order and its estimate come from different services and fail
@@ -177,6 +177,30 @@ private struct StatusBadge: View {
         case "Preparing": .orange
         default: .secondary
         }
+    }
+}
+
+// A visible button, because pull-to-refresh is unreliable to drive on a
+// streamed simulator. The spinner shows that a tap did something.
+private struct RefreshButton: View {
+    let action: () async -> Void
+    @State private var isRefreshing = false
+
+    var body: some View {
+        Button {
+            Task {
+                isRefreshing = true
+                await action()
+                isRefreshing = false
+            }
+        } label: {
+            if isRefreshing {
+                ProgressView()
+            } else {
+                Label("Refresh", systemImage: "arrow.clockwise")
+            }
+        }
+        .disabled(isRefreshing)
     }
 }
 
