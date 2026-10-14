@@ -21,3 +21,10 @@ jobs:
         with:
           api-key: ${{ secrets.LIM_API_KEY }}
           project-path: .
+          # The preview simulator attaches to this tunnel before the app
+          # launches, so the app reaches the staging API and this laptop.
+          tunnel: staging
+          env: |
+            API_URL=http://api.staging.internal:4200
+            ETA_URL=http://localhost:4100
+          open-url: limrun-demo://orders/1042
