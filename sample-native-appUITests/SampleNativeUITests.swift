@@ -1,20 +1,27 @@
 import XCTest
 
 final class SampleNativeUITests: XCTestCase {
-    func testGreetingIsVisible() {
+    func testStartPauseAndResume() {
         let app = XCUIApplication()
         app.launch()
-        XCTAssertTrue(app.staticTexts["Hello, world!"].waitForExistence(timeout: 10))
+
+        XCTAssertTrue(app.buttons["startButton"].waitForExistence(timeout: 10))
+        app.buttons["startButton"].tap()
+        XCTAssertTrue(app.staticTexts["scoreLabel"].waitForExistence(timeout: 5))
+
+        app.buttons["pauseButton"].tap()
+        XCTAssertTrue(app.buttons["resumeButton"].waitForExistence(timeout: 5))
+        app.buttons["resumeButton"].tap()
+        XCTAssertTrue(app.staticTexts["scoreLabel"].exists)
     }
 
-    func testGreetsByName() {
+    func testCollisionAllowsAnotherRun() {
         let app = XCUIApplication()
         app.launch()
-        let field = app.textFields["nameField"]
-        XCTAssertTrue(field.waitForExistence(timeout: 10))
-        field.tap()
-        field.typeText("Ada")
-        app.buttons["greetButton"].tap()
-        XCTAssertTrue(app.staticTexts["Hello, Ada!"].waitForExistence(timeout: 5))
+        app.buttons["startButton"].tap()
+
+        XCTAssertTrue(app.buttons["retryButton"].waitForExistence(timeout: 15))
+        app.buttons["retryButton"].tap()
+        XCTAssertTrue(app.staticTexts["scoreLabel"].waitForExistence(timeout: 5))
     }
 }
