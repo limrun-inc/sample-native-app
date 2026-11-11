@@ -118,4 +118,7 @@ xcrun xccov view --report Tests.xcresult
 xcrun xcresulttool export attachments --path Tests.xcresult --output-path attachments
 ```
 
+The coverage report shows `Greeter.shortened(_:)` partly covered, because no test passes a
+single word longer than 16 characters. Add one and run the tests again to see the number change.
+
 See [Run XCTest suites](https://docs.limrun.com/docs/testing/xctest) for every option.

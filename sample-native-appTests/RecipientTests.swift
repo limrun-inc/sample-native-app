@@ -10,4 +10,8 @@ struct RecipientTests {
     @Test func fallsBackToWorld() {
         #expect(Greeter.recipient(for: "") == "world")
     }
+
+    @Test func keepsTheFirstNameOfALongName() {
+        #expect(Greeter.recipient(for: "Augusta Ada King Lovelace") == "Augusta")
+    }
 }
