@@ -12,10 +12,22 @@
 			target = 8A0C3A6D2F1A57C100ADB008 /* sample-native-app */;
 			targetProxy = A10000000000000000000001 /* PBXContainerItemProxy */;
 		};
+		A20000000000000000000009 = {
+			isa = PBXTargetDependency;
+			target = 8A0C3A6D2F1A57C100ADB008 /* sample-native-app */;
+			targetProxy = A20000000000000000000001 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXContainerItemProxy section */
 		A10000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8A0C3A662F1A57C100ADB008 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8A0C3A6D2F1A57C100ADB008;
+			remoteInfo = "sample-native-app";
+		};
+		A20000000000000000000001 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8A0C3A662F1A57C100ADB008 /* Project object */;
 			proxyType = 1;
@@ -27,6 +39,7 @@
 /* Begin PBXFileReference section */
 		8A0C3A6E2F1A57C100ADB008 /* sample-native-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "sample-native-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000002 /* sample-native-appUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "sample-native-appUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000002 /* sample-native-appTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "sample-native-appTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -38,6 +51,11 @@
 		A10000000000000000000003 /* sample-native-appUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "sample-native-appUITests";
+			sourceTree = "<group>";
+		};
+		A20000000000000000000003 /* sample-native-appTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "sample-native-appTests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -56,6 +74,12 @@
 			files = ();
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A20000000000000000000004 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -63,6 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				8A0C3A702F1A57C100ADB008 /* sample-native-app */,
+				A20000000000000000000003 /* sample-native-appTests */,
 				A10000000000000000000003 /* sample-native-appUITests */,
 				8A0C3A6F2F1A57C100ADB008 /* Products */,
 			);
@@ -72,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				8A0C3A6E2F1A57C100ADB008 /* sample-native-app.app */,
+				A20000000000000000000002 /* sample-native-appTests.xctest */,
 				A10000000000000000000002 /* sample-native-appUITests.xctest */,
 			);
 			name = Products;
@@ -118,6 +144,22 @@
 			productReference = A10000000000000000000002 /* sample-native-appUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		A20000000000000000000007 /* sample-native-appTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A20000000000000000000008;
+			buildPhases = (
+				A20000000000000000000006 /* Sources */,
+				A20000000000000000000004 /* Frameworks */,
+				A20000000000000000000005 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (A20000000000000000000009,);
+			fileSystemSynchronizedGroups = (A20000000000000000000003,);
+			name = "sample-native-appTests";
+			productName = "sample-native-appTests";
+			productReference = A20000000000000000000002 /* sample-native-appTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -129,6 +171,9 @@
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					A10000000000000000000007 = {
+						TestTargetID = 8A0C3A6D2F1A57C100ADB008;
+					};
+					A20000000000000000000007 = {
 						TestTargetID = 8A0C3A6D2F1A57C100ADB008;
 					};
 					8A0C3A6D2F1A57C100ADB008 = {
@@ -151,6 +196,7 @@
 			projectRoot = "";
 			targets = (
 				8A0C3A6D2F1A57C100ADB008 /* sample-native-app */,
+				A20000000000000000000007 /* sample-native-appTests */,
 				A10000000000000000000007 /* sample-native-appUITests */,
 			);
 		};
@@ -170,6 +216,12 @@
 			files = ();
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A20000000000000000000005 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -181,6 +233,12 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A10000000000000000000006 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A20000000000000000000006 = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = ();
@@ -402,6 +460,38 @@
 			};
 			name = Release;
 		};
+		A2000000000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4374L65X94;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.limrun.sample-native.tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/sample-native-app.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/sample-native-app";
+			};
+			name = Debug;
+		};
+		A2000000000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4374L65X94;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.limrun.sample-native.tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/sample-native-app.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/sample-native-app";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -428,6 +518,15 @@
 			buildConfigurations = (
 				A1000000000000000000000A /* Debug */,
 				A1000000000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A20000000000000000000008 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A2000000000000000000000A /* Debug */,
+				A2000000000000000000000B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

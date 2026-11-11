@@ -76,10 +76,49 @@ Now you can use it in your iOS instances!
 lim run ios --install-asset=sample-native-app.app.tar.gz
 ```
 
-## Run the UI test
+## Run the tests
+
+The scheme has a unit test target, with XCTest and Swift Testing cases, and a UI test target.
 
 ```bash
 lim xcode test . --scheme sample-native-app
 ```
 
-The test launches the app and checks that "Hello, world!" appears.
+The command builds the tests, runs them on the simulator, and prints one line per test case.
+It exits non-zero when a test fails.
+
+### Keep a result bundle with coverage
+
+Add `--result-bundle` to download Xcode's `.xcresult` bundle and `--coverage` to collect line
+coverage. Both need `lim` 0.53.0 or later.
+
+```bash
+lim xcode test . --scheme sample-native-app --result-bundle Tests.xcresult --coverage
+```
+
+To rerun one test class, skip the build. The command reuses the last test build, so it takes
+no path or scheme:
+
+```bash
+lim xcode test --without-building \
+  --only-testing sample-native-appTests/GreeterTests \
+  --result-bundle Greeter.xcresult --coverage
+```
+
+Read a bundle on a Mac with the tools that ship with Xcode:
+
+```bash
+# Test counts and failures
+xcrun xcresulttool get test-results summary --path Tests.xcresult
+
+# Line coverage per target and file
+xcrun xccov view --report Tests.xcresult
+
+# The screenshot that the UI test attaches
+xcrun xcresulttool export attachments --path Tests.xcresult --output-path attachments
+```
+
+The coverage report shows `Greeter.shortened(_:)` partly covered, because no test passes a
+single word longer than 16 characters. Add one and run the tests again to see the number change.
+
+See [Run XCTest suites](https://docs.limrun.com/docs/testing/xctest) for every option.

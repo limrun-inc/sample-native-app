@@ -7,6 +7,7 @@ During development, you MUST use the `limrun-xcode` skill to build the app and
 the `limrun-ios-simulator` skill to test it in the simulator using `lim` CLI.
 
 - The bundle ID is `com.limrun.sample-native`.
+- Run the unit and UI tests with `lim xcode test . --scheme sample-native-app`.
 
 
 ```bash
