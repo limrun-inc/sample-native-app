@@ -24,9 +24,9 @@ nonisolated enum Greeter {
 
     // Prefers the first name, and cuts a single long word.
     static func shortened(_ name: String) -> String {
-        if let first = name.split(separator: " ").first, first.count <= maxNameLength {
+        if let first = name.split(whereSeparator: \.isWhitespace).first, first.count <= maxNameLength {
             return String(first)
         }
-        return name.prefix(maxNameLength) + "…"
+        return name.prefix(maxNameLength - 1) + "…"
     }
 }
