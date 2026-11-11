@@ -10,6 +10,9 @@
    <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES">
       <Testables>
          <TestableReference skipped="NO">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="A20000000000000000000007" BuildableName="sample-native-appTests.xctest" BlueprintName="sample-native-appTests" ReferencedContainer="container:sample-native-app.xcodeproj"/>
+         </TestableReference>
+         <TestableReference skipped="NO">
             <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="A10000000000000000000007" BuildableName="sample-native-appUITests.xctest" BlueprintName="sample-native-appUITests" ReferencedContainer="container:sample-native-app.xcodeproj"/>
          </TestableReference>
       </Testables>

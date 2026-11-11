@@ -16,5 +16,11 @@ final class SampleNativeUITests: XCTestCase {
         field.typeText("Ada")
         app.buttons["greetButton"].tap()
         XCTAssertTrue(app.staticTexts["Hello, Ada!"].waitForExistence(timeout: 5))
+
+        // Attachments end up in the result bundle of a `--result-bundle` run.
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "greeting"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
     }
 }

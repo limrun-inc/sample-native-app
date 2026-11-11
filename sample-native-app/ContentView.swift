@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var name = ""
-    @State private var greeting = "Hello, world!"
+    @State private var greeting = Greeter.greeting(for: "")
     @FocusState private var nameFocused: Bool
 
     var body: some View {
@@ -60,10 +60,9 @@ struct ContentView: View {
     // The log line lets the docs show that app output is readable from the
     // simulator, next to the change on screen.
     private func greet() {
-        let trimmed = name.trimmingCharacters(in: .whitespaces)
-        greeting = trimmed.isEmpty ? "Hello, world!" : "Hello, \(trimmed)!"
+        greeting = Greeter.greeting(for: name)
         nameFocused = false
-        print("[sample] greeted \(trimmed.isEmpty ? "world" : trimmed)")
+        print("[sample] greeted \(Greeter.recipient(for: name))")
     }
 }
 
