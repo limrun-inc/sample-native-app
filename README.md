@@ -96,7 +96,8 @@ coverage. Both need `lim` 0.53.0 or later.
 lim xcode test . --scheme sample-native-app --result-bundle Tests.xcresult --coverage
 ```
 
-To rerun one test class on the same build, skip the build:
+To rerun one test class, skip the build. The command reuses the last test build, so it takes
+no path or scheme:
 
 ```bash
 lim xcode test --without-building \
